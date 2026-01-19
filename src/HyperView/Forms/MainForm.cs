@@ -3287,6 +3287,360 @@ Management:
         private void buttonRefreshClusterInfoUI_Click(object sender, EventArgs e)
         {
             LoadClusterInformationView();
-        }        
+        }
+
+        /// <summary>
+        /// Loads and displays virtual disk information in the hvDisks tab
+        /// </summary>
+        public void LoadVirtualDiskOverview()
+        {
+            try
+            {
+                Message("User requested virtual disk overview refresh",
+                    EventType.Information, 5030);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show("No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        "Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                this.Cursor = Cursors.WaitCursor;
+                toolStripStatusLabelTextMainForm.Text = "Loading virtual disk information...";
+
+                Message("Retrieving virtual disk details...",
+                    EventType.Information, 5031);
+
+                // Get virtual disk details
+                List<VirtualDiskInfo> diskDetails;
+
+                if (SessionContext.IsCluster && !SessionContext.IsLocal)
+                {
+                    // Cluster environment - get disks from all nodes
+                    diskDetails = VirtualDisks.GetVirtualDiskDetails(
+                        cmd => ExecutePowerShellCommand(cmd),
+                        (node, cmd) => ExecutePowerShellCommandOnNode(node, cmd));
+                }
+                else
+                {
+                    // Single host or local
+                    diskDetails = VirtualDisks.GetVirtualDiskDetails(
+                        cmd => ExecutePowerShellCommand(cmd));
+                }
+
+                if (diskDetails != null && diskDetails.Count > 0)
+                {
+                    Message($"Retrieved {diskDetails.Count} virtual disk(s), updating DataGridView",
+                        EventType.Information, 5032);
+
+                    UpdateVirtualDisksDataGridView(diskDetails);
+
+                    toolStripStatusLabelTextMainForm.Text = $"Loaded {diskDetails.Count} virtual disk(s)";
+
+                    Message($"Virtual disk overview loaded successfully with {diskDetails.Count} disk(s)",
+                        EventType.Information, 5033);
+                }
+                else
+                {
+                    Message("No virtual disks found",
+                        EventType.Warning, 5034);
+
+                    toolStripStatusLabelTextMainForm.Text = "No virtual disks found";
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error loading virtual disk overview: {ex.Message}";
+                Message(errorMsg, EventType.Error, 5035);
+
+                MessageBox.Show(errorMsg,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                toolStripStatusLabelTextMainForm.Text = "Error loading virtual disk overview";
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+            }
+        }
+
+        /// <summary>
+        /// Updates the datagridviewvDiskOverView DataGridView with virtual disk details
+        /// </summary>
+        private void UpdateVirtualDisksDataGridView(List<VirtualDiskInfo> diskDetails)
+        {
+            try
+            {
+                if (datagridviewvDiskOverView == null)
+                {
+                    Message("datagridviewvDiskOverView control not found",
+                        EventType.Warning, 5036);
+                    return;
+                }
+
+                // Clear existing data
+                datagridviewvDiskOverView.DataSource = null;
+                datagridviewvDiskOverView.Rows.Clear();
+                datagridviewvDiskOverView.Columns.Clear();
+
+                if (diskDetails == null || diskDetails.Count == 0)
+                {
+                    Message("No virtual disk details to display",
+                        EventType.Information, 5037);
+                    return;
+                }
+
+                Message($"Updating datagridviewvDiskOverView with {diskDetails.Count} virtual disk(s)",
+                    EventType.Information, 5038);
+
+                // Create DataTable with comprehensive columns (Hyper-V equivalents of VMware disk info)
+                var dataTable = new DataTable();
+
+                // VM Information
+                dataTable.Columns.Add("VM Name", typeof(string));
+                dataTable.Columns.Add("VM State", typeof(string));
+                dataTable.Columns.Add("VM Generation", typeof(string));
+                dataTable.Columns.Add("VM ID", typeof(string));
+                dataTable.Columns.Add("VM Notes", typeof(string));
+
+                // Disk Information
+                dataTable.Columns.Add("Disk Name", typeof(string));
+                dataTable.Columns.Add("Disk Path", typeof(string));
+                dataTable.Columns.Add("Disk Type", typeof(string)); // Dynamic/Fixed/Differencing
+                dataTable.Columns.Add("Disk Format", typeof(string)); // VHD/VHDX
+                dataTable.Columns.Add("Max Size (GB)", typeof(string));
+                dataTable.Columns.Add("File Size (GB)", typeof(string));
+                dataTable.Columns.Add("Used Space (GB)", typeof(string));
+                dataTable.Columns.Add("Fragmentation %", typeof(string));
+                dataTable.Columns.Add("Physical Sector Size", typeof(string));
+                dataTable.Columns.Add("Logical Sector Size", typeof(string));
+                dataTable.Columns.Add("Block Size", typeof(string));
+
+                // Controller Information
+                dataTable.Columns.Add("Controller Type", typeof(string)); // IDE/SCSI
+                dataTable.Columns.Add("Controller #", typeof(string));
+                dataTable.Columns.Add("Controller Location", typeof(string));
+                dataTable.Columns.Add("Attachment Type", typeof(string)); // VHD/Physical
+
+                // Advanced Disk Properties
+                dataTable.Columns.Add("Shared", typeof(string));
+                dataTable.Columns.Add("Read Only", typeof(string));
+                dataTable.Columns.Add("Clustered", typeof(string));
+                dataTable.Columns.Add("Persistent Reservations", typeof(string));
+
+                // QoS Information
+                dataTable.Columns.Add("QoS Policy ID", typeof(string));
+                dataTable.Columns.Add("QoS Min IOPS", typeof(string));
+                dataTable.Columns.Add("QoS Max IOPS", typeof(string));
+
+                // Differencing Disk
+                dataTable.Columns.Add("Parent Path", typeof(string));
+                dataTable.Columns.Add("Disk Identifier", typeof(string));
+
+                // Environment Information
+                dataTable.Columns.Add("Cluster Name", typeof(string));
+                dataTable.Columns.Add("Current Host", typeof(string));
+                dataTable.Columns.Add("VM Path", typeof(string));
+                dataTable.Columns.Add("Config Location", typeof(string));
+                dataTable.Columns.Add("Snapshot Location", typeof(string));
+                dataTable.Columns.Add("Smart Paging Path", typeof(string));
+
+                // OS Information
+                dataTable.Columns.Add("Guest OS Type", typeof(string));
+
+                // Add rows with all disk data
+                foreach (var disk in diskDetails)
+                {
+                    var row = dataTable.NewRow();
+
+                    // VM Information
+                    row["VM Name"] = disk.VMName;
+                    row["VM State"] = disk.VMState;
+                    row["VM Generation"] = disk.VMGeneration;
+                    row["VM ID"] = disk.VMId;
+                    row["VM Notes"] = disk.VMNotes;
+
+                    // Disk Information
+                    row["Disk Name"] = disk.DiskName;
+                    row["Disk Path"] = disk.DiskPath;
+                    row["Disk Type"] = disk.DiskType;
+                    row["Disk Format"] = disk.DiskFormat;
+                    row["Max Size (GB)"] = disk.MaxSizeGB > 0 ? disk.MaxSizeGB.ToString("F2") : "";
+                    row["File Size (GB)"] = disk.FileSizeGB > 0 ? disk.FileSizeGB.ToString("F2") : "";
+                    row["Used Space (GB)"] = disk.UsedSpaceGB > 0 ? disk.UsedSpaceGB.ToString("F2") : "";
+                    row["Fragmentation %"] = disk.FragmentationPercent;
+                    row["Physical Sector Size"] = disk.PhysicalSectorSizeBytes > 0 ? disk.PhysicalSectorSizeBytes.ToString() : "";
+                    row["Logical Sector Size"] = disk.LogicalSectorSizeBytes > 0 ? disk.LogicalSectorSizeBytes.ToString() : "";
+                    row["Block Size"] = disk.BlockSizeBytes > 0 ? disk.BlockSizeBytes.ToString() : "";
+
+                    // Controller Information
+                    row["Controller Type"] = disk.ControllerType;
+                    row["Controller #"] = disk.ControllerNumber.ToString();
+                    row["Controller Location"] = disk.ControllerLocation.ToString();
+                    row["Attachment Type"] = disk.AttachmentType;
+
+                    // Advanced Disk Properties
+                    row["Shared"] = disk.IsShared ? "Yes" : "No";
+                    row["Read Only"] = disk.IsReadOnly ? "Yes" : "No";
+                    row["Clustered"] = disk.IsClustered ? "Yes" : "No";
+                    row["Persistent Reservations"] = disk.SupportPersistentReservations;
+
+                    // QoS Information
+                    row["QoS Policy ID"] = disk.QoSPolicyId;
+                    row["QoS Min IOPS"] = disk.QoSMinimumIOPS;
+                    row["QoS Max IOPS"] = disk.QoSMaximumIOPS;
+
+                    // Differencing Disk
+                    row["Parent Path"] = disk.ParentPath;
+                    row["Disk Identifier"] = disk.DiskIdentifier;
+
+                    // Environment Information
+                    row["Cluster Name"] = disk.ClusterName;
+                    row["Current Host"] = disk.CurrentHost;
+                    row["VM Path"] = disk.VMPath;
+                    row["Config Location"] = disk.ConfigurationLocation;
+                    row["Snapshot Location"] = disk.SnapshotFileLocation;
+                    row["Smart Paging Path"] = disk.SmartPagingFilePath;
+
+                    // OS Information
+                    row["Guest OS Type"] = disk.GuestOSType;
+
+                    dataTable.Rows.Add(row);
+                }
+
+                // Bind to DataGridView
+                datagridviewvDiskOverView.DataSource = dataTable;
+
+                // Configure DataGridView properties
+                datagridviewvDiskOverView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                datagridviewvDiskOverView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                datagridviewvDiskOverView.MultiSelect = false;
+                datagridviewvDiskOverView.ReadOnly = true;
+                datagridviewvDiskOverView.AllowUserToAddRows = false;
+                datagridviewvDiskOverView.AllowUserToDeleteRows = false;
+                datagridviewvDiskOverView.RowHeadersVisible = false;
+                datagridviewvDiskOverView.AllowUserToResizeRows = false;
+
+                // Apply alternating row colors
+                foreach (DataGridViewRow row in datagridviewvDiskOverView.Rows)
+                {
+                    if (row.Index % 2 == 0)
+                    {
+                        row.DefaultCellStyle.BackColor = Color.AliceBlue;
+                    }
+                    else
+                    {
+                        row.DefaultCellStyle.BackColor = Color.White;
+                    }
+                }
+
+                // Color code VM State
+                foreach (DataGridViewRow row in datagridviewvDiskOverView.Rows)
+                {
+                    var state = row.Cells["VM State"].Value?.ToString();
+                    if (state == "Running")
+                    {
+                        row.Cells["VM State"].Style.BackColor = Color.LightGreen;
+                        row.Cells["VM State"].Style.ForeColor = Color.DarkGreen;
+                    }
+                    else if (state == "Off")
+                    {
+                        row.Cells["VM State"].Style.BackColor = Color.LightGray;
+                        row.Cells["VM State"].Style.ForeColor = Color.DarkSlateGray;
+                    }
+                    else if (state == "Paused" || state == "Saved")
+                    {
+                        row.Cells["VM State"].Style.BackColor = Color.LightYellow;
+                        row.Cells["VM State"].Style.ForeColor = Color.DarkOrange;
+                    }
+                }
+
+                // Color code Disk Type
+                foreach (DataGridViewRow row in datagridviewvDiskOverView.Rows)
+                {
+                    var diskType = row.Cells["Disk Type"].Value?.ToString();
+                    if (diskType == "Dynamic")
+                    {
+                        row.Cells["Disk Type"].Style.BackColor = Color.LightGreen;
+                    }
+                    else if (diskType == "Fixed")
+                    {
+                        row.Cells["Disk Type"].Style.BackColor = Color.LightBlue;
+                    }
+                    else if (diskType == "Differencing")
+                    {
+                        row.Cells["Disk Type"].Style.BackColor = Color.LightYellow;
+                    }
+                    else if (diskType == "PassThrough")
+                    {
+                        row.Cells["Disk Type"].Style.BackColor = Color.LightCoral;
+                    }
+                }
+
+                // Set minimum column widths for key columns
+                if (datagridviewvDiskOverView.Columns.Contains("VM Name"))
+                    datagridviewvDiskOverView.Columns["VM Name"].MinimumWidth = 150;
+                if (datagridviewvDiskOverView.Columns.Contains("Disk Name"))
+                    datagridviewvDiskOverView.Columns["Disk Name"].MinimumWidth = 200;
+                if (datagridviewvDiskOverView.Columns.Contains("Disk Path"))
+                    datagridviewvDiskOverView.Columns["Disk Path"].MinimumWidth = 300;
+
+                Message($"datagridviewvDiskOverView updated successfully with {diskDetails.Count} virtual disk(s)",
+                    EventType.Information, 5039);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error updating datagridviewvDiskOverView: {ex.Message}",
+                    EventType.Error, 5040);
+            }
+        }
+
+        private void buttonLoadvDiskrefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Message("User requested virtual disk overview refresh",
+                    EventType.Information, 5041);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show("No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        "Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                // Load virtual disk overview
+                LoadVirtualDiskOverview();
+
+                // Show success message if disks were loaded
+                if (datagridviewvDiskOverView != null && datagridviewvDiskOverView.Rows.Count > 0)
+                {
+                    int diskCount = datagridviewvDiskOverView.Rows.Count;
+                    MessageBox.Show($"Virtual disk overview refreshed successfully.\n\nFound {diskCount} virtual disk(s).",
+                        "Refresh Complete",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error refreshing virtual disk overview: {ex.Message}";
+                Message(errorMsg, EventType.Error, 5042);
+
+                MessageBox.Show(errorMsg,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
     }
 }

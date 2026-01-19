@@ -185,7 +185,9 @@ namespace HyperView
                 // Create DataTable with enhanced columns
                 var dataTable = new DataTable();
                 dataTable.Columns.Add("VM Name");
+                dataTable.Columns.Add("VM Id");
                 dataTable.Columns.Add("State");
+                dataTable.Columns.Add("Enabled");
                 dataTable.Columns.Add("CPU Count");
                 dataTable.Columns.Add("CPU Usage %");
                 dataTable.Columns.Add("Memory Assigned (MB)");
@@ -206,6 +208,7 @@ namespace HyperView
                 dataTable.Columns.Add("Replication");
                 dataTable.Columns.Add("Created");
                 dataTable.Columns.Add("Is Clustered");
+                dataTable.Columns.Add("Is Deleted");
                 dataTable.Columns.Add("Owner Node");
                 dataTable.Columns.Add("Categories");
 
@@ -214,7 +217,25 @@ namespace HyperView
                     var row = dataTable.NewRow();
                     var vmName = vm.Properties["Name"]?.Value?.ToString() ?? "";
                     row["VM Name"] = vmName;
+
+                    // VM Id (GUID)
+                    var vmId = vm.Properties["VMId"]?.Value ?? vm.Properties["Id"]?.Value;
+                    row["VM Id"] = vmId?.ToString() ?? "";
+
                     row["State"] = vm.Properties["State"]?.Value?.ToString() ?? "";
+
+                    // Enabled property (some VMs may not have this, default to Yes if not present)
+                    var enabled = vm.Properties["Enabled"]?.Value;
+                    if (enabled != null)
+                    {
+                        row["Enabled"] = (bool)enabled ? "Yes" : "No";
+                    }
+                    else
+                    {
+                        // If property doesn't exist, assume enabled
+                        row["Enabled"] = "Yes";
+                    }
+
                     row["CPU Count"] = vm.Properties["ProcessorCount"]?.Value?.ToString() ?? "";
                     row["CPU Usage %"] = vm.Properties["CPUUsage"]?.Value?.ToString() ?? "";
 
@@ -332,6 +353,18 @@ namespace HyperView
 
                     var isClustered = vm.Properties["IsClustered"]?.Value;
                     row["Is Clustered"] = isClustered != null && (bool)isClustered ? "Yes" : "No";
+
+                    // Is Deleted property
+                    var isDeleted = vm.Properties["IsDeleted"]?.Value;
+                    if (isDeleted != null)
+                    {
+                        row["Is Deleted"] = (bool)isDeleted ? "Yes" : "No";
+                    }
+                    else
+                    {
+                        // If property doesn't exist, assume not deleted
+                        row["Is Deleted"] = "No";
+                    }
 
                     // Owner Node (for cluster VMs)
                     var ownerNode = vm.Properties["ComputerName"]?.Value?.ToString();
@@ -472,7 +505,10 @@ namespace HyperView
                                 # Create custom object with all details
                                 [PSCustomObject]@{
                                     Name = $vm.Name
+                                    VMId = $vm.VMId
+                                    Id = $vm.Id
                                     State = $vm.State
+                                    Enabled = if ($vm.PSObject.Properties['Enabled']) { $vm.Enabled } else { $true }
                                     ProcessorCount = if ($vmProcessor) { $vmProcessor.Count } else { 1 }
                                     CPUUsage = $vm.CPUUsage
                                     MemoryAssigned = $vm.MemoryAssigned
@@ -489,6 +525,7 @@ namespace HyperView
                                     ReplicationState = $vm.ReplicationState
                                     CreationTime = $vm.CreationTime
                                     IsClustered = $vm.IsClustered
+                                    IsDeleted = if ($vm.PSObject.Properties['IsDeleted']) { $vm.IsDeleted } else { $false }
                                     TotalDiskSizeGB = $totalDiskSizeGB
                                     NetworkAdapterCount = $vmNetworkAdapters.Count
                                     CheckpointCount = $vmCheckpoints.Count

@@ -42,6 +42,28 @@ namespace HyperView.Forms
             _isInitializing = false;
         }
 
+        /// <summary>
+        /// Ensures the form is activated and brought to the foreground when shown
+        /// </summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
+            // Temporarily set TopMost to force the window to the foreground
+            // This is needed because Windows may not always activate a new window
+            this.TopMost = true;
+            this.TopMost = false;
+
+            // Activate and bring the form to the foreground
+            this.Activate();
+            this.BringToFront();
+            this.Focus();
+
+            // Set focus to the server textbox for immediate typing
+            textboxServer.Focus();
+            textboxServer.SelectAll();
+        }
+
         private void InitializeHyperVDefaults()
         {
             try

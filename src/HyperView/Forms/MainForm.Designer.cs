@@ -136,7 +136,6 @@
             tabcontrolMainForm.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tabcontrolMainForm.Controls.Add(tabpagehvOverview);
             tabcontrolMainForm.Controls.Add(tabpageVMGroups);
-            tabcontrolMainForm.Controls.Add(tabpageManageNetwork);
             tabcontrolMainForm.Controls.Add(tabpagehvHosts);
             tabcontrolMainForm.Controls.Add(tabpagehvClusters);
             tabcontrolMainForm.Controls.Add(tabpagehvStorage);
@@ -144,6 +143,7 @@
             tabcontrolMainForm.Controls.Add(tabpagehvCheckpoints);
             tabcontrolMainForm.Controls.Add(tabpagehvReplica);
             tabcontrolMainForm.Controls.Add(tabpagehvResources);
+            tabcontrolMainForm.Controls.Add(tabpageManageNetwork);
             tabcontrolMainForm.Controls.Add(tabpagehvNetworking);
             tabcontrolMainForm.Controls.Add(tabpagehvSecurity);
             tabcontrolMainForm.Controls.Add(tabpagehvPerformance);
@@ -168,7 +168,7 @@
             tabpagehvOverview.Padding = new Padding(3);
             tabpagehvOverview.Size = new Size(1613, 844);
             tabpagehvOverview.TabIndex = 0;
-            tabpagehvOverview.Text = "hvOverview";
+            tabpagehvOverview.Text = "hvView";
             tabpagehvOverview.UseVisualStyleBackColor = true;
             // 
             // buttonSummaryhvOverviewView
@@ -214,7 +214,7 @@
             tabpageVMGroups.Padding = new Padding(3);
             tabpageVMGroups.Size = new Size(1613, 844);
             tabpageVMGroups.TabIndex = 1;
-            tabpageVMGroups.Text = "Manage VM Groups";
+            tabpageVMGroups.Text = "hvVMGroups";
             tabpageVMGroups.UseVisualStyleBackColor = true;
             // 
             // groupBox2
@@ -318,7 +318,7 @@
             tabpageManageNetwork.Name = "tabpageManageNetwork";
             tabpageManageNetwork.Size = new Size(1613, 844);
             tabpageManageNetwork.TabIndex = 2;
-            tabpageManageNetwork.Text = "Manage VM Networks";
+            tabpageManageNetwork.Text = "hvNetwork";
             tabpageManageNetwork.UseVisualStyleBackColor = true;
             // 
             // tabpagehvHosts

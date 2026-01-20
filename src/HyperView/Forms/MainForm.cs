@@ -13,18 +13,152 @@ namespace HyperView
         private PSObject _psSession = null;
         private Runspace _persistentRunspace = null;
 
+        private bool _initialLoadComplete = false;
+
         public MainForm()
         {
             InitializeComponent();
             InitializeSession();
-            LoadVMOverview();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             // Set initial status (make dynamic based on context if needed when shown later)
-            toolStripStatusLabelTextMainForm.Text = "Ready";
-            // Any additional initialization on form load
+            toolStripStatusLabelTextMainForm.Text = "Loading...";
+            // Initial data load will happen in OnShown
+        }
+
+        /// <summary>
+        /// Performs initial data load with progress form when MainForm is first shown
+        /// </summary>
+        protected override async void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
+            // Only perform initial load once
+            if (_initialLoadComplete)
+                return;
+
+            Thread progressThread = null;
+            ValidationProgressForm progressForm = null;
+            ManualResetEvent progressFormReady = new ManualResetEvent(false);
+
+            try
+            {
+                // Create progress form on a separate UI thread to keep it responsive
+                progressThread = new Thread(() =>
+                {
+                    progressForm = new ValidationProgressForm();
+                    progressForm.StartPosition = FormStartPosition.CenterScreen;
+                    progressForm.TopMost = true;
+                    
+                    // Signal that the form is created
+                    progressFormReady.Set();
+                    
+                    // Run message loop for this form on this thread
+                    Application.Run(progressForm);
+                });
+                
+                progressThread.SetApartmentState(ApartmentState.STA);
+                progressThread.IsBackground = true;
+                progressThread.Start();
+
+                // Wait for progress form to be created and shown
+                progressFormReady.WaitOne();
+                await Task.Delay(100); // Give it time to render
+
+                Message("Starting initial data load for MainForm", EventType.Information, 2200);
+
+                Exception loadException = null;
+
+                // Load VM Overview in background
+                Message("Loading VM Overview data...", EventType.Information, 2201);
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            LoadVMOverview();
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        loadException = ex;
+                        Message($"Error loading VM Overview: {ex.Message}", EventType.Error, 2203);
+                    }
+                });
+
+                // Small delay between operations
+                await Task.Delay(100);
+
+                // Load VM Groups in background if no error occurred
+                if (loadException == null)
+                {
+                    Message("Loading VM Groups data...", EventType.Information, 2202);
+                    await Task.Run(() =>
+                    {
+                        try
+                        {
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                UpdateVMGroupsDataGridView();
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            loadException = ex;
+                            Message($"Error loading VM Groups: {ex.Message}", EventType.Error, 2204);
+                        }
+                    });
+                }
+
+                // Check for errors
+                if (loadException != null)
+                {
+                    MessageBox.Show(
+                        $"Error loading initial data:\n\n{loadException.Message}",
+                        "Data Load Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+
+                _initialLoadComplete = true;
+                toolStripStatusLabelTextMainForm.Text = "Ready";
+                Message("Initial data load completed successfully", EventType.Information, 2205);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error in OnShown initial load: {ex.Message}", EventType.Error, 2206);
+                MessageBox.Show(
+                    $"Error initializing form:\n\n{ex.Message}",
+                    "Initialization Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                toolStripStatusLabelTextMainForm.Text = "Error";
+            }
+            finally
+            {
+                // Close the progress form on its own thread
+                if (progressForm != null)
+                {
+                    try
+                    {
+                        // Use Invoke to close the form on its own thread
+                        progressForm.Invoke((MethodInvoker)delegate
+                        {
+                            progressForm.Close();
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore disposal errors
+                    }
+                }
+
+                // Clean up the event
+                progressFormReady?.Dispose();
+            }
         }
 
         /// <summary>

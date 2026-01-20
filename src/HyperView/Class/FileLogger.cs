@@ -26,7 +26,7 @@ namespace HyperView.Class
         // Get logfile path
         public static string GetLogPath(string df)
         {
-            return FileManager.LogFilePath + @"\" + Globals.ToolName.HyperViewGui + " Log " + df + ".log";
+            return FileManager.LogFilePath + @"\" + Globals.ToolName.FullName + " Log " + df + ".log";
         }
 
         // Get datetime
@@ -79,10 +79,10 @@ namespace HyperView.Class
             {
                 var banner = new StringBuilder();
                 banner.AppendLine("================================================================================");
-                banner.AppendLine($"  {Globals.ToolName.HyperView} - APPLICATION STARTED");
+                banner.AppendLine($"  {Globals.ToolName.ShortName} - APPLICATION STARTED");
                 banner.AppendLine("================================================================================");
                 banner.AppendLine($"  Start Time:          {dateTime}");
-                banner.AppendLine($"  Application:         {Globals.ToolName.HyperViewGui}");
+                banner.AppendLine($"  Application:         {Globals.ToolName.FullName}");
                 banner.AppendLine($"  Version:             {Application.ProductVersion}");
                 banner.AppendLine($"  User:                {Environment.UserName}");
                 banner.AppendLine($"  Domain User:         {Environment.UserDomainName}\\{Environment.UserName}");
@@ -127,7 +127,7 @@ namespace HyperView.Class
 
                 var banner = new StringBuilder();
                 banner.AppendLine("================================================================================");
-                banner.AppendLine($"  {Globals.ToolName.HyperView} - APPLICATION STOPPED");
+                banner.AppendLine($"  {Globals.ToolName.ShortName} - APPLICATION STOPPED");
                 banner.AppendLine("================================================================================");
                 banner.AppendLine($"  Stop Time:           {dateTime}");
                 banner.AppendLine($"  User:                {Environment.UserDomainName}\\{Environment.UserName}");
@@ -296,9 +296,9 @@ namespace HyperView.Class
                 if (type != EventType.Error && WriteOnlyErrorsToEventLog)
                     return;
                 var eventLog = new EventLog("");
-                if (!EventLog.SourceExists(Globals.ToolName.HyperViewGui))
-                    EventLog.CreateEventSource(Globals.ToolName.HyperViewGui, "Application");
-                eventLog.Source = Globals.ToolName.HyperViewGui;
+                if (!EventLog.SourceExists(Globals.ToolName.FullName))
+                    EventLog.CreateEventSource(Globals.ToolName.FullName, "Application");
+                eventLog.Source = Globals.ToolName.FullName;
                 eventLog.EnableRaisingEvents = true;
                 var type1 = EventLogEntryType.Error;
                 switch (type)

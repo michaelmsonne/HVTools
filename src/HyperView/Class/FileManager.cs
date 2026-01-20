@@ -16,7 +16,7 @@
             get
             {
                 // Path to the program data folder
-                var programDataFilePathvar = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{Globals.ToolName.HyperView}";
+                var programDataFilePathvar = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{Globals.ToolName.ShortName}";
                 return programDataFilePathvar;
             }
         }

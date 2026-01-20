@@ -63,8 +63,8 @@ namespace HyperView.Forms
 
         private void SetToolName()
         {
-            labelLoginFormToolName.Text = Globals.ToolName.HyperView + " v." + Globals.ToolProperties.ToolVersion;
-            Text = $"{Globals.ToolName.HyperView} - Login";
+            labelLoginFormToolName.Text = Globals.ToolName.ShortName + " v." + Globals.ToolProperties.ToolVersion;
+            Text = $"{Globals.ToolName.ShortName} - Login";
         }
 
         /// <summary>

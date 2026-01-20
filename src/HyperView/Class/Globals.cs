@@ -4,8 +4,8 @@
     {
         internal class ToolName
         {
-            internal static string HyperView = "HyperView";
-            internal static string HyperViewGui = "HyperView GUI";
+            internal static string ShortName = "HyperView";
+            internal static string FullName = "HyperView GUI";
         }
 
         internal class MsgBox

@@ -96,7 +96,7 @@ namespace HyperView
                 }
 
                 // Update form title with connection info
-                this.Text = $"{Globals.ToolName.HyperView} - Connected to {SessionContext.ServerName} ({SessionContext.ConnectionType})";
+                this.Text = $"{Globals.ToolName.ShortName} - Connected to {SessionContext.ServerName} ({SessionContext.ConnectionType})";
             }
             catch (Exception ex)
             {
@@ -2436,7 +2436,7 @@ namespace HyperView
             try
             {
                 var logFilePath = FileManager.LogFilePath;
-                logFilePath = logFilePath + "\\" + Globals.ToolName.HyperView + " Log " + DateTime.Today.ToString("dd-MM-yyyy") + "." + "log";
+                logFilePath = logFilePath + "\\" + Globals.ToolName.ShortName + " Log " + DateTime.Today.ToString("dd-MM-yyyy") + "." + "log";
                 Process.Start(logFilePath);
             }
             catch (Exception exception)

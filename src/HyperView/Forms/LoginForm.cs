@@ -63,8 +63,8 @@ namespace HyperView.Forms
 
         private void SetToolName()
         {
-            labelLoginFormToolName.Text = Globals.ToolName.ShortName + " v." + Globals.ToolProperties.ToolVersion;
-            Text = $"{Globals.ToolName.ShortName} - Login";
+            labelLoginFormToolName.Text = Globals.ToolName.ShortName + @" v." + Globals.ToolProperties.ToolVersion;
+            Text = $@"{Globals.ToolName.ShortName} - Login";
         }
 
         /// <summary>
@@ -617,9 +617,9 @@ namespace HyperView.Forms
                         string fqdn = vmHost.Properties["FullyQualifiedDomainName"]?.Value?.ToString() ?? hostName;
                         int logicalProcessors = Convert.ToInt32(vmHost.Properties["LogicalProcessorCount"]?.Value ?? 0);
                         long memoryCapacity = Convert.ToInt64(vmHost.Properties["MemoryCapacity"]?.Value ?? 0);
-                        double memoryGB = Math.Round(memoryCapacity / 1024.0 / 1024.0 / 1024.0, 2);
+                        double memoryGb = Math.Round(memoryCapacity / 1024.0 / 1024.0 / 1024.0, 2);
 
-                        FileLogger.Message($"Host information retrieved - Name: '{hostName}', FQDN: '{fqdn}', Processors: {logicalProcessors}, Memory: {memoryGB} GB",
+                        FileLogger.Message($"Host information retrieved - Name: '{hostName}', FQDN: '{fqdn}', Processors: {logicalProcessors}, Memory: {memoryGb} GB",
                             FileLogger.EventType.Information, 1093);
 
                         // Get Hyper-V version
@@ -723,7 +723,7 @@ namespace HyperView.Forms
                             FullyQualifiedDomainName = fqdn,
                             HyperVVersion = hyperVVersion,
                             LogicalProcessorCount = logicalProcessors,
-                            TotalMemoryGB = memoryGB,
+                            TotalMemoryGB = memoryGb,
                             IsCluster = isCluster,
                             ClusterName = clusterName
                         };
@@ -979,12 +979,12 @@ namespace HyperView.Forms
                         string hostName = hashtable["HostName"]?.ToString() ?? serverName;
                         string fqdn = hashtable["FQDN"]?.ToString() ?? hostName;
                         int logicalProcessors = Convert.ToInt32(hashtable["LogicalProcessors"] ?? 0);
-                        double memoryGB = Convert.ToDouble(hashtable["MemoryGB"] ?? 0);
+                        double memoryGb = Convert.ToDouble(hashtable["MemoryGB"] ?? 0);
                         string hyperVVersion = hashtable["HyperVVersion"]?.ToString() ?? "Unknown";
                         bool isCluster = Convert.ToBoolean(hashtable["IsCluster"] ?? false);
                         string clusterName = hashtable["ClusterName"]?.ToString();
 
-                        FileLogger.Message($"Host information retrieved - Name: '{hostName}', FQDN: '{fqdn}', Processors: {logicalProcessors}, Memory: {memoryGB} GB",
+                        FileLogger.Message($"Host information retrieved - Name: '{hostName}', FQDN: '{fqdn}', Processors: {logicalProcessors}, Memory: {memoryGb} GB",
                             FileLogger.EventType.Information, 1105);
 
                         FileLogger.Message($"Hyper-V version: {hyperVVersion}",
@@ -1016,7 +1016,7 @@ namespace HyperView.Forms
                             FullyQualifiedDomainName = fqdn,
                             HyperVVersion = hyperVVersion,
                             LogicalProcessorCount = logicalProcessors,
-                            TotalMemoryGB = memoryGB,
+                            TotalMemoryGB = memoryGb,
                             IsCluster = isCluster,
                             ClusterName = clusterName
                         };
@@ -1571,7 +1571,7 @@ namespace HyperView.Forms
                         FileLogger.Message("Prompting user for elevation due to permission error",
                             FileLogger.EventType.Information, 1096);
 
-                        var result = MessageBox.Show(elevationPrompt, "Elevation Required",
+                        var result = MessageBox.Show(elevationPrompt, @"Elevation Required",
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                         if (result == DialogResult.Yes)
@@ -1587,9 +1587,13 @@ namespace HyperView.Forms
                             {
                                 FileLogger.Message($"Failed to start as admin: {ex.Message}",
                                     FileLogger.EventType.Error, 1001);
-                                MessageBox.Show($"Failed to restart as administrator:\n\n{ex.Message}\n\n" +
-                                    "Please close this application and manually run it as Administrator.",
-                                    "Elevation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show($@"Failed to restart as administrator:
+
+{ex.Message}
+
+" +
+                                    @"Please close this application and manually run it as Administrator.",
+                                    @"Elevation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         else
@@ -1604,7 +1608,7 @@ namespace HyperView.Forms
                                 "  • Right-click the application and select 'Run as administrator'\n" +
                                 "  • Ask your administrator to add you to the 'Hyper-V Administrators' group\n" +
                                 "  • Connect to a remote Hyper-V host instead of localhost",
-                                "Connection Failed",
+                                @"Connection Failed",
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
@@ -1613,7 +1617,7 @@ namespace HyperView.Forms
                         MessageBox.Show($@"Failed to connect to {serverName}
 
 Error: {connectionResult.Error}",
-                            "Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            @"Connection Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -1719,15 +1723,24 @@ Error: {connectionResult.Error}",
         private void buttonHelpConnectGuide_Click(object sender, EventArgs e)
         {
             MessageBox.Show(
-                "🔍 To directly manage a single host, enter the IP address or host name. To manage multiple hosts, enter the IP address or name of a Cluster.\n\n" +
-                "To connect to a Hyper-V server or Cluster, ensure the following prerequisites are met:\n\n" +
-                "1. The Hyper-V/Cluster role(s) is installed on the target server.\n" +
-                "2. PowerShell Remoting (WinRM) is enabled and accessible on the target server.\n" +
-                "3. You have the necessary permissions to manage Hyper-V/Cluster on the target server.\n" +
-                "4. If using custom credentials, ensure they are valid and have Hyper-V management rights.\n\n" +
-                "For local connections, ensure you run this application with Administrator privileges or " +
-                "that your user account is a member of the 'Hyper-V Administrators' group.",
-                "Connection Guide", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                @"🔍 To directly manage a single host, enter the IP address or host name. To manage multiple hosts, enter the IP address or name of a Cluster.
+
+" +
+                @"To connect to a Hyper-V server or Cluster, ensure the following prerequisites are met:
+
+" +
+                @"1. The Hyper-V/Cluster role(s) is installed on the target server.
+" +
+                @"2. PowerShell Remoting (WinRM) is enabled and accessible on the target server.
+" +
+                @"3. You have the necessary permissions to manage Hyper-V/Cluster on the target server.
+" +
+                @"4. If using custom credentials, ensure they are valid and have Hyper-V management rights.
+
+" +
+                @"For local connections, ensure you run this application with Administrator privileges or " +
+                @"that your user account is a member of the 'Hyper-V Administrators' group.",
+                @"Connection Guide", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         #endregion UI Handlers

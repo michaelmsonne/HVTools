@@ -273,7 +273,7 @@ namespace HyperView.Forms
         {
             if (string.IsNullOrWhiteSpace(textboxGroupName?.Text))
             {
-                MessageBox.Show(@"Please enter a group name.", "Invalid Input",
+                MessageBox.Show(@"Please enter a group name.", @"Invalid Input",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

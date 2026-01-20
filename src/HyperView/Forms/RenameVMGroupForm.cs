@@ -44,7 +44,7 @@ namespace HyperView.Forms
             if (string.IsNullOrWhiteSpace(textboxNewName?.Text))
             {
                 MessageBox.Show(@"Please enter a new group name.",
-                    "Invalid Input",
+                    @"Invalid Input",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;
@@ -55,7 +55,7 @@ namespace HyperView.Forms
             if (newName == CurrentGroupName)
             {
                 MessageBox.Show(@"The new name must be different from the current name.",
-                    "Invalid Input",
+                    @"Invalid Input",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return;

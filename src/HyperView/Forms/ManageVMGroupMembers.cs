@@ -56,7 +56,7 @@ namespace HyperView.Forms
                 if (currentGroup == null)
                 {
                     MessageBox.Show($@"VM Group '{GroupName}' not found.",
-                        "Group Not Found",
+                        @"Group Not Found",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Exclamation);
                     return;
@@ -102,7 +102,7 @@ namespace HyperView.Forms
                 if (listboxAvailable.SelectedItems.Count == 0)
                 {
                     MessageBox.Show(@"Please select VMs to add.",
-                        "No Selection",
+                        @"No Selection",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
                     return;
@@ -160,7 +160,7 @@ namespace HyperView.Forms
                     }
 
                     MessageBox.Show(message,
-                        "Operation Complete",
+                        @"Operation Complete",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
@@ -176,7 +176,7 @@ namespace HyperView.Forms
                 FileLogger.Message(errorMsg, FileLogger.EventType.Error, 2133);
 
                 MessageBox.Show(errorMsg,
-                    "Error",
+                    @"Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -192,7 +192,7 @@ namespace HyperView.Forms
                 if (listboxMembers.SelectedItems.Count == 0)
                 {
                     MessageBox.Show(@"Please select VMs to remove.",
-                        "No Selection",
+                        @"No Selection",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
                     return;
@@ -200,7 +200,7 @@ namespace HyperView.Forms
 
                 var confirmResult = MessageBox.Show(
                     @"Are you sure you want to remove the selected VM(s) from the group?",
-                    "Confirm Removal",
+                    @"Confirm Removal",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
 
@@ -265,7 +265,7 @@ namespace HyperView.Forms
                     }
 
                     MessageBox.Show(message,
-                        "Operation Complete",
+                        @"Operation Complete",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
 
@@ -281,7 +281,7 @@ namespace HyperView.Forms
                 FileLogger.Message(errorMsg, FileLogger.EventType.Error, 2137);
 
                 MessageBox.Show(errorMsg,
-                    "Error",
+                    @"Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }

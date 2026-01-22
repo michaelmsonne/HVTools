@@ -410,7 +410,7 @@ namespace HyperView.Forms
 
                 Message($"Starting background operation: {operationName}", EventType.Information, 6006);
 
-                T result = default(T);
+                T result = default;
                 Exception taskException = null;
 
                 // Run operation in background task

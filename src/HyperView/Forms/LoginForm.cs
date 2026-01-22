@@ -222,8 +222,9 @@ namespace HyperView.Forms
                     "root\\CIMV2",
                     "SELECT Name, InstallState FROM Win32_OptionalFeature WHERE Name LIKE '%Hyper-V%' OR Name = 'Microsoft-Hyper-V'"))
                 {
-                    foreach (ManagementObject feature in searcher.Get())
+                    foreach (var o in searcher.Get())
                     {
+                        var feature = (ManagementObject)o;
                         string featureName = feature["Name"]?.ToString();
                         uint installState = Convert.ToUInt32(feature["InstallState"]);
 
@@ -278,8 +279,9 @@ namespace HyperView.Forms
                     "root\\CIMV2",
                     "SELECT Name, ID FROM Win32_ServerFeature WHERE Name LIKE '%Hyper-V%'"))
                 {
-                    foreach (ManagementObject feature in searcher.Get())
+                    foreach (var o in searcher.Get())
                     {
+                        var feature = (ManagementObject)o;
                         string featureName = feature["Name"]?.ToString();
                         
                         FileLogger.Message($"Hyper-V role detected on Windows Server: {featureName}",

@@ -5172,41 +5172,81 @@ Would you like to open the file location?",
                         EventType.Information, 6058);
 
                     // Get cluster nodes
-                    var nodesResult = ExecutePowerShellCommand("Get-ClusterNode -ErrorAction Stop | Select-Object -ExpandProperty Name");
+                    string getNodesScript = @"
+                        Get-ClusterNode -ErrorAction Stop | Select-Object -ExpandProperty Name
+                    ";
+
+                    var nodesResult = ExecutePowerShellCommand(getNodesScript);
                     
-                    if (nodesResult != null && nodesResult.Count > 0)
+                    if (nodesResult == null || nodesResult.Count == 0)
+                    {
+                        Message("No cluster nodes found, falling back to standard checkpoint retrieval",
+                            EventType.Warning, 6070);
+                        results = ExecutePowerShellCommand(getCheckpointsScript);
+                    }
+                    else
                     {
                         var allCheckpoints = new System.Collections.ObjectModel.Collection<PSObject>();
                         
+                        // Build list of cluster nodes
+                        var clusterNodes = new List<string>();
                         foreach (var nodeObj in nodesResult)
                         {
                             string nodeName = nodeObj.BaseObject?.ToString();
                             if (!string.IsNullOrEmpty(nodeName))
                             {
-                                try
+                                // If the original connection used FQDN, construct FQDNs for cluster nodes
+                                if (SessionContext.ServerName.Contains('.') && !nodeName.Contains('.'))
                                 {
-                                    var nodeCheckpoints = ExecutePowerShellCommandOnNode(nodeName, getCheckpointsScript);
-                                    if (nodeCheckpoints != null)
+                                    string domain = SessionContext.ServerName.Substring(SessionContext.ServerName.IndexOf('.'));
+                                    nodeName = nodeName + domain;
+                                }
+                                clusterNodes.Add(nodeName);
+                            }
+                        }
+
+                        Message($"Found {clusterNodes.Count} cluster nodes: {string.Join(", ", clusterNodes)}",
+                            EventType.Information, 6071);
+
+                        // Get checkpoints from each node
+                        int nodeIndex = 0;
+                        foreach (var node in clusterNodes)
+                        {
+                            nodeIndex++;
+                            try
+                            {
+                                Message($"Getting checkpoints from cluster node {nodeIndex} of {clusterNodes.Count}: '{node}'",
+                                    EventType.Information, 6072);
+
+                                var nodeCheckpoints = ExecutePowerShellCommandOnNode(node, getCheckpointsScript);
+                                
+                                if (nodeCheckpoints != null && nodeCheckpoints.Count > 0)
+                                {
+                                    foreach (var checkpoint in nodeCheckpoints)
                                     {
-                                        foreach (var checkpoint in nodeCheckpoints)
-                                        {
-                                            allCheckpoints.Add(checkpoint);
-                                        }
+                                        allCheckpoints.Add(checkpoint);
                                     }
+                                    Message($"Added {nodeCheckpoints.Count} checkpoint(s) from cluster node: '{node}'",
+                                        EventType.Information, 6073);
                                 }
-                                catch (Exception ex)
+                                else
                                 {
-                                    Message($"Failed to get checkpoints from node {nodeName}: {ex.Message}",
-                                        EventType.Warning, 6059);
+                                    Message($"No checkpoints found on cluster node: {node}",
+                                        EventType.Information, 6074);
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                Message($"Failed to get checkpoints from cluster node {node}: {ex.Message}",
+                                    EventType.Warning, 6075);
+                                // Continue processing other nodes
                             }
                         }
                         
+                        Message($"Total checkpoints collected from all cluster nodes: {allCheckpoints.Count}",
+                            EventType.Information, 6076);
+
                         results = allCheckpoints;
-                    }
-                    else
-                    {
-                        results = ExecutePowerShellCommand(getCheckpointsScript);
                     }
                 }
                 else

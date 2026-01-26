@@ -66,6 +66,10 @@
             labelvDiskOverviewText = new Label();
             datagridviewvDiskOverView = new DataGridView();
             tabpagehvCheckpoints = new TabPage();
+            buttonSummaryvCheckpointsView = new Button();
+            buttonLoadvCheckpointsrefresh = new Button();
+            labelvCheckpointsOverviewText = new Label();
+            datagridviewCheckpointOverView = new DataGridView();
             tabpagehvReplica = new TabPage();
             tabpagehvResources = new TabPage();
             tabpageManageNetwork = new TabPage();
@@ -107,10 +111,6 @@
             toolStripStatusLabelTextMainForm = new ToolStripStatusLabel();
             groupBoxMainFormServerDetails = new GroupBox();
             toolstripstatuslabelMain_CreatedBy = new Label();
-            buttonSummaryvCheckpointsView = new Button();
-            buttonLoadvCheckpointsrefresh = new Button();
-            labelvCheckpointsOverviewText = new Label();
-            datagridviewCheckpointOverView = new DataGridView();
             ((System.ComponentModel.ISupportInitialize)datagridviewVMOverView).BeginInit();
             tabcontrolMainForm.SuspendLayout();
             tabpagehvOverview.SuspendLayout();
@@ -123,6 +123,7 @@
             tabPagehvDisks.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)datagridviewvDiskOverView).BeginInit();
             tabpagehvCheckpoints.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)datagridviewCheckpointOverView).BeginInit();
             tabpageVMGroups.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -130,7 +131,6 @@
             menuStripTopMainForm.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureboxSupportMe).BeginInit();
             statusStripMainForm.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)datagridviewCheckpointOverView).BeginInit();
             SuspendLayout();
             // 
             // datagridviewVMOverView
@@ -555,6 +555,46 @@
             tabpagehvCheckpoints.Text = "hvCheckpoints";
             tabpagehvCheckpoints.UseVisualStyleBackColor = true;
             // 
+            // buttonSummaryvCheckpointsView
+            // 
+            buttonSummaryvCheckpointsView.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonSummaryvCheckpointsView.Location = new Point(1372, 6);
+            buttonSummaryvCheckpointsView.Name = "buttonSummaryvCheckpointsView";
+            buttonSummaryvCheckpointsView.Size = new Size(75, 23);
+            buttonSummaryvCheckpointsView.TabIndex = 11;
+            buttonSummaryvCheckpointsView.Text = "Summary";
+            buttonSummaryvCheckpointsView.UseVisualStyleBackColor = true;
+            buttonSummaryvCheckpointsView.Click += buttonSummaryvCheckpointsView_Click;
+            // 
+            // buttonLoadvCheckpointsrefresh
+            // 
+            buttonLoadvCheckpointsrefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonLoadvCheckpointsrefresh.Location = new Point(1453, 6);
+            buttonLoadvCheckpointsrefresh.Name = "buttonLoadvCheckpointsrefresh";
+            buttonLoadvCheckpointsrefresh.Size = new Size(154, 23);
+            buttonLoadvCheckpointsrefresh.TabIndex = 10;
+            buttonLoadvCheckpointsrefresh.Text = "&Load Checkpoints/refresh";
+            buttonLoadvCheckpointsrefresh.UseVisualStyleBackColor = true;
+            buttonLoadvCheckpointsrefresh.Click += buttonLoadvCheckpointsrefresh_Click;
+            // 
+            // labelvCheckpointsOverviewText
+            // 
+            labelvCheckpointsOverviewText.AutoSize = true;
+            labelvCheckpointsOverviewText.Location = new Point(6, 3);
+            labelvCheckpointsOverviewText.Name = "labelvCheckpointsOverviewText";
+            labelvCheckpointsOverviewText.Size = new Size(767, 30);
+            labelvCheckpointsOverviewText.TabIndex = 9;
+            labelvCheckpointsOverviewText.Text = "This view provides provides overview and core functionality within the Hyper-V space for information about VM checkpoints and other data that\r\nextends that functionality over multiple servers.";
+            // 
+            // datagridviewCheckpointOverView
+            // 
+            datagridviewCheckpointOverView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            datagridviewCheckpointOverView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            datagridviewCheckpointOverView.Location = new Point(6, 35);
+            datagridviewCheckpointOverView.Name = "datagridviewCheckpointOverView";
+            datagridviewCheckpointOverView.Size = new Size(1601, 803);
+            datagridviewCheckpointOverView.TabIndex = 8;
+            // 
             // tabpagehvReplica
             // 
             tabpagehvReplica.Location = new Point(4, 24);
@@ -917,44 +957,6 @@
             toolstripstatuslabelMain_CreatedBy.TabIndex = 4;
             toolstripstatuslabelMain_CreatedBy.Text = "Created by: Michael Morten Sonne";
             // 
-            // buttonSummaryvCheckpointsView
-            // 
-            buttonSummaryvCheckpointsView.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSummaryvCheckpointsView.Location = new Point(1372, 6);
-            buttonSummaryvCheckpointsView.Name = "buttonSummaryvCheckpointsView";
-            buttonSummaryvCheckpointsView.Size = new Size(75, 23);
-            buttonSummaryvCheckpointsView.TabIndex = 11;
-            buttonSummaryvCheckpointsView.Text = "Summary";
-            buttonSummaryvCheckpointsView.UseVisualStyleBackColor = true;
-            // 
-            // buttonLoadvCheckpointsrefresh
-            // 
-            buttonLoadvCheckpointsrefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonLoadvCheckpointsrefresh.Location = new Point(1453, 6);
-            buttonLoadvCheckpointsrefresh.Name = "buttonLoadvCheckpointsrefresh";
-            buttonLoadvCheckpointsrefresh.Size = new Size(154, 23);
-            buttonLoadvCheckpointsrefresh.TabIndex = 10;
-            buttonLoadvCheckpointsrefresh.Text = "&Load Checkpoints/refresh";
-            buttonLoadvCheckpointsrefresh.UseVisualStyleBackColor = true;
-            // 
-            // labelvCheckpointsOverviewText
-            // 
-            labelvCheckpointsOverviewText.AutoSize = true;
-            labelvCheckpointsOverviewText.Location = new Point(6, 3);
-            labelvCheckpointsOverviewText.Name = "labelvCheckpointsOverviewText";
-            labelvCheckpointsOverviewText.Size = new Size(767, 30);
-            labelvCheckpointsOverviewText.TabIndex = 9;
-            labelvCheckpointsOverviewText.Text = "This view provides provides overview and core functionality within the Hyper-V space for information about VM checkpoints and other data that\r\nextends that functionality over multiple servers.";
-            // 
-            // datagridviewCheckpointOverView
-            // 
-            datagridviewCheckpointOverView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            datagridviewCheckpointOverView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            datagridviewCheckpointOverView.Location = new Point(6, 35);
-            datagridviewCheckpointOverView.Name = "datagridviewCheckpointOverView";
-            datagridviewCheckpointOverView.Size = new Size(1601, 803);
-            datagridviewCheckpointOverView.TabIndex = 8;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -991,6 +993,7 @@
             ((System.ComponentModel.ISupportInitialize)datagridviewvDiskOverView).EndInit();
             tabpagehvCheckpoints.ResumeLayout(false);
             tabpagehvCheckpoints.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)datagridviewCheckpointOverView).EndInit();
             tabpageVMGroups.ResumeLayout(false);
             tabpageVMGroups.PerformLayout();
             groupBox2.ResumeLayout(false);
@@ -1001,7 +1004,6 @@
             ((System.ComponentModel.ISupportInitialize)pictureboxSupportMe).EndInit();
             statusStripMainForm.ResumeLayout(false);
             statusStripMainForm.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)datagridviewCheckpointOverView).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }

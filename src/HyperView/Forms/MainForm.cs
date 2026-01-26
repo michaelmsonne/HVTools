@@ -431,13 +431,6 @@ namespace HyperView.Forms
                 // Execute completion action on UI thread (we're back on UI thread after await)
                 try
                 {
-                    if (progressForm != null && !progressForm.IsDisposed)
-                    {
-                        progressForm.Close();
-                        progressForm.Dispose();
-                        progressForm = null;
-                    }
-
                     if (taskException != null)
                     {
                         MessageBox.Show($@"Error during {operationName}:
@@ -449,6 +442,7 @@ namespace HyperView.Forms
                     }
                     else if (onComplete != null)
                     {
+                        // Execute completion handler BEFORE closing progress form
                         onComplete(result);
                     }
                 }
@@ -456,6 +450,16 @@ namespace HyperView.Forms
                 {
                     Message($"Error in completion handler for '{operationName}': {ex.Message}",
                         EventType.Error, 6008);
+                }
+                finally
+                {
+                    // Close progress form AFTER completion handler finishes
+                    if (progressForm != null && !progressForm.IsDisposed)
+                    {
+                        progressForm.Close();
+                        progressForm.Dispose();
+                        progressForm = null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -493,13 +497,7 @@ namespace HyperView.Forms
                 Message($"Loading VM overview from '{SessionContext.ServerName}' (IsCluster: {SessionContext.IsCluster}, IsLocal: {SessionContext.IsLocal})",
                     EventType.Information, 2170);
 
-                // Clear existing data
-                datagridviewVMOverView.DataSource = null;
-                datagridviewVMOverView.Rows.Clear();
-                datagridviewVMOverView.Columns.Clear();
-
                 System.Collections.ObjectModel.Collection<PSObject> results;
-                bool isClusterCollection = false;
 
                 // Check if connected to a cluster - use node iteration approach
                 if (SessionContext.IsCluster && !SessionContext.IsLocal)
@@ -508,7 +506,6 @@ namespace HyperView.Forms
                         EventType.Information, 2171);
 
                     results = GetClusterVMs();
-                    isClusterCollection = true;
                 }
                 else
                 {
@@ -525,6 +522,46 @@ namespace HyperView.Forms
 
                 Message($"Retrieved {results.Count} VMs, processing...",
                     EventType.Information, 2172);
+
+                // Update the DataGridView
+                UpdateVmOverviewDataGridView(results);
+
+                Message($"VM overview loaded successfully with {results.Count} VMs",
+                    EventType.Information, 2173);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error loading VM overview: {ex.Message}",
+                    EventType.Error, 2006);
+                MessageBox.Show($@"Error loading VM overview: {ex.Message}", @"Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Updates the VM Overview DataGridView with PowerShell results
+        /// </summary>
+        private void UpdateVmOverviewDataGridView(System.Collections.ObjectModel.Collection<PSObject> results)
+        {
+            try
+            {
+                if (results == null || results.Count == 0)
+                {
+                    Message("No VM results to display",
+                        EventType.Warning, 2187);
+                    return;
+                }
+
+                // Determine if this is cluster collection data
+                bool isClusterCollection = results.Count > 0 &&
+                    results[0].Properties["TotalDiskSizeGB"] != null &&
+                    results[0].Properties["NetworkAdapterCount"] != null &&
+                    results[0].Properties["CheckpointCount"] != null;
+
+                // Clear existing data
+                datagridviewVMOverView.DataSource = null;
+                datagridviewVMOverView.Rows.Clear();
+                datagridviewVMOverView.Columns.Clear();
 
                 // Create DataTable with enhanced columns
                 var dataTable = new DataTable();
@@ -752,16 +789,21 @@ namespace HyperView.Forms
                     // Remove the auto-generated column
                     datagridviewVMOverView.Columns.RemoveAt(exportColumnIndex);
 
-                    // Create a proper checkbox column
+                    // Create a proper checkbox column with all required properties
                     DataGridViewCheckBoxColumn checkboxColumn = new DataGridViewCheckBoxColumn
                     {
                         Name = "Export",
                         DataPropertyName = "Export",
                         HeaderText = @"☑",
                         Width = 40,
+                        ReadOnly = false,
                         TrueValue = true,
                         FalseValue = false,
-                        // ... other properties
+                        IndeterminateValue = false,
+                        ValueType = typeof(bool),
+                        SortMode = DataGridViewColumnSortMode.NotSortable,
+                        Frozen = false,
+                        Resizable = DataGridViewTriState.False
                     };
 
                     // Insert at the beginning
@@ -791,16 +833,12 @@ namespace HyperView.Forms
                 datagridviewVMOverView.ColumnHeaderMouseClick += DatagridviewVMOverView_ColumnHeaderMouseClick;
 
                 // Color coding will be applied automatically via DataBindingComplete event
-
-                Message($"VM overview loaded successfully with {results.Count} VMs",
-                    EventType.Information, 2173);
             }
             catch (Exception ex)
             {
-                Message($"Error loading VM overview: {ex.Message}",
-                    EventType.Error, 2006);
-                MessageBox.Show($@"Error loading VM overview: {ex.Message}", @"Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Message($"Error updating VM overview DataGridView: {ex.Message}",
+                    EventType.Error, 2188);
+                throw;
             }
         }
 
@@ -1061,11 +1099,21 @@ namespace HyperView.Forms
 
                             if (ps.HadErrors)
                             {
-                                var errors = string.Join(Environment.NewLine,
-                                    ps.Streams.Error.Select(e => e.ToString()));
-                                Message($"PowerShell command '{command}' errors: {errors}",
-                                    EventType.Error, 2007);
-                                return null;
+                                // Only log actual error messages (not empty errors from SilentlyContinue)
+                                var actualErrors = ps.Streams.Error.Where(e => 
+                                    e != null && 
+                                    e.Exception != null && 
+                                    !string.IsNullOrWhiteSpace(e.Exception.Message))
+                                    .ToList();
+
+                                if (actualErrors.Any())
+                                {
+                                    var errors = string.Join(Environment.NewLine,
+                                        actualErrors.Select(e => e.Exception.Message));
+                                    Message($"PowerShell command errors: {errors}",
+                                        EventType.Error, 2007);
+                                    return null;
+                                }
                             }
 
                             return results;
@@ -1095,11 +1143,21 @@ namespace HyperView.Forms
 
                         if (ps.HadErrors)
                         {
-                            var errors = string.Join(Environment.NewLine,
-                                ps.Streams.Error.Select(e => e.ToString()));
-                            Message($"PowerShell command '{command}' errors: {errors}",
-                                EventType.Error, 2007);
-                            return null;
+                            // Only log actual error messages (not empty errors from SilentlyContinue)
+                            var actualErrors = ps.Streams.Error.Where(e => 
+                                e != null && 
+                                e.Exception != null && 
+                                !string.IsNullOrWhiteSpace(e.Exception.Message))
+                                .ToList();
+
+                            if (actualErrors.Any())
+                            {
+                                var errors = string.Join(Environment.NewLine,
+                                    actualErrors.Select(e => e.Exception.Message));
+                                Message($"PowerShell command errors: {errors}",
+                                    EventType.Error, 2007);
+                                return null;
+                            }
                         }
 
                         return results;
@@ -2099,7 +2157,7 @@ namespace HyperView.Forms
 
         private void allVMDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private bool ExportToJson(string filePath, List<VmGroupInfo> vmGroups)
@@ -2685,41 +2743,63 @@ namespace HyperView.Forms
                     return;
                 }
 
-                //this.Cursor = Cursors.WaitCursor;
                 toolStripStatusLabelTextMainForm.Text = @"Starting VM overview refresh...";
 
                 Message("Starting VM overview refresh...",
                     EventType.Information, 2152);
 
-                // Execute with progress form
-                ExecuteWithProgressForm(() =>
+                // Execute with progress form - use generic version to keep PowerShell work in background
+                ExecuteWithProgressForm<System.Collections.ObjectModel.Collection<PSObject>>(() =>
                 {
-                    // Reload VM overview data (runs in background thread, but UI operations need invoke)
-                    LoadVmOverview();
+                    // Get VM data with ALL details in background thread (PowerShell work - no UI blocking)
+                    Message("Retrieving VM data from server...",
+                        EventType.Information, 2152);
 
-                    // Count running VMs from the grid  
-                    int totalVMs = 0;
-                    int runningVMs = 0;
+                    System.Collections.ObjectModel.Collection<PSObject> results;
 
-                    if (datagridviewVMOverView.InvokeRequired)
+                    // Always use GetClusterVMs for data collection (it works for standalone too)
+                    // This ensures all PowerShell work is done in the background
+                    if (SessionContext.IsCluster && !SessionContext.IsLocal)
                     {
-                        datagridviewVMOverView.Invoke((Action)(() =>
-                        {
-                            totalVMs = datagridviewVMOverView.Rows.Count;
-
-                            foreach (DataGridViewRow row in datagridviewVMOverView.Rows)
-                            {
-                                var state = row.Cells["State"].Value?.ToString();
-                                if (state == "Running")
-                                {
-                                    runningVMs++;
-                                }
-                            }
-                        }));
+                        Message("Using cluster node iteration to retrieve VMs from all nodes...",
+                            EventType.Information, 2171);
+                        results = GetClusterVMs();
                     }
                     else
                     {
-                        totalVMs = datagridviewVMOverView.Rows.Count;
+                        Message("Retrieving VMs with detailed properties...",
+                            EventType.Information, 2189);
+                        // Use the same detailed collection approach for standalone hosts
+                        results = GetDetailedVMsForStandalone();
+                    }
+
+                    return results;
+
+                }, (results) =>
+                {
+                    // Process results on UI thread (UI updates only - NO PowerShell calls)
+                    try
+                    {
+                        if (results == null || results.Count == 0)
+                        {
+                            MessageBox.Show(@"No VMs found.",
+                                @"Information",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                            toolStripStatusLabelTextMainForm.Text = @"No VMs found";
+                            return;
+                        }
+
+                        Message($"Retrieved {results.Count} VMs, updating UI...",
+                            EventType.Information, 2172);
+
+                        // Clear and rebuild the DataGridView on UI thread
+                        // This now only updates UI - no PowerShell calls
+                        UpdateVmOverviewDataGridView(results);
+
+                        // Count running VMs
+                        int totalVMs = datagridviewVMOverView.Rows.Count;
+                        int runningVMs = 0;
 
                         foreach (DataGridViewRow row in datagridviewVMOverView.Rows)
                         {
@@ -2729,33 +2809,21 @@ namespace HyperView.Forms
                                 runningVMs++;
                             }
                         }
+
+                        Message($"VM overview refresh completed - Total: {totalVMs}, Running: {runningVMs}",
+                            EventType.Information, 2153);
+
+                        toolStripStatusLabelTextMainForm.Text = $"VM overview refreshed successfully. Total VMs: {totalVMs}, Running VMs: {runningVMs}";
                     }
-
-                    Message($"VM overview refresh completed - Total: {totalVMs}, Running: {runningVMs}",
-                        EventType.Information, 2153);
-
-                    // Show success message (will be invoked on UI thread automatically)
-                    if (InvokeRequired)
+                    catch (Exception ex)
                     {
-                        Invoke((Action)(() =>
-                        {
-                            toolStripStatusLabelTextMainForm.Text = "VM overview refreshed successfully. Total VMs: " + totalVMs + ", Running VMs: " + runningVMs;
+                        Message($"Error updating VM overview UI: {ex.Message}",
+                            EventType.Error, 2154);
 
-                            /*MessageBox.Show($"VM overview refreshed successfully.\n\nTotal VMs: {totalVMs}\nRunning VMs: {runningVMs}",
-                                "Refresh Complete",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);*/
-                        }));
-                    }
-                    else
-                    {
-                        // Update statusstrip directly
-                        toolStripStatusLabelTextMainForm.Text = "VM overview refreshed successfully. Total VMs: " + totalVMs + ", Running VMs: " + runningVMs;
-
-                        /*MessageBox.Show($"VM overview refreshed successfully.\n\nTotal VMs: {totalVMs}\nRunning VMs: {runningVMs}",
-                            "Refresh Complete",
+                        MessageBox.Show($@"Error updating VM overview: {ex.Message}",
+                            @"Error",
                             MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);*/
+                            MessageBoxIcon.Error);
                     }
 
                 }, "VM Overview Refresh");
@@ -2769,6 +2837,105 @@ namespace HyperView.Forms
                     @"Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Gets detailed VM information for standalone/local hosts
+        /// Collects all properties in one pass to avoid multiple PowerShell calls later
+        /// </summary>
+        private System.Collections.ObjectModel.Collection<PSObject> GetDetailedVMsForStandalone()
+        {
+            try
+            {
+                Message("Getting detailed VM information for standalone host...",
+                    EventType.Information, 2190);
+
+                // Use the same script as cluster nodes to get all details at once
+                string getDetailedVMsScript = @"
+                    $vmList = Get-VM -ErrorAction SilentlyContinue
+                    foreach ($vm in $vmList) {
+                        # Get all detailed properties
+                        $vmProcessor = Get-VMProcessor -VMName $vm.Name -ErrorAction SilentlyContinue
+                        $vmMemory = Get-VMMemory -VMName $vm.Name -ErrorAction SilentlyContinue
+                        $vmNetworkAdapters = @(Get-VMNetworkAdapter -VMName $vm.Name -ErrorAction SilentlyContinue)
+                        $vmHardDrives = @(Get-VMHardDiskDrive -VMName $vm.Name -ErrorAction SilentlyContinue)
+                        $vmCheckpoints = @(Get-VMSnapshot -VMName $vm.Name -ErrorAction SilentlyContinue)
+                        $vmIntegrationServices = @(Get-VMIntegrationService -VMName $vm.Name -ErrorAction SilentlyContinue)
+
+                        # Calculate total disk size
+                        $totalDiskSizeGB = 0
+                        foreach ($drive in $vmHardDrives) {
+                            if ($drive.Path -and (Test-Path $drive.Path -ErrorAction SilentlyContinue)) {
+                                $diskInfo = Get-Item $drive.Path -ErrorAction SilentlyContinue
+                                if ($diskInfo) {
+                                    $totalDiskSizeGB += [Math]::Round($diskInfo.Length / 1GB, 2)
+                                }
+                            }
+                        }
+
+                        # Format integration services
+                        $enabledServices = @()
+                        $totalServiceCount = 0
+                        foreach ($svc in $vmIntegrationServices) {
+                            $totalServiceCount++
+                            if ($svc.Enabled) {
+                                $displayName = $svc.Name -replace 'Guest Service Interface', 'Guest Svc' -replace 'Key-Value Pair Exchange', 'KVP' -replace 'Time Synchronization', 'Time Sync'
+                                $enabledServices += $displayName
+                            }
+                        }
+                        $integrationServicesDisplay = if ($totalServiceCount -gt 0) {
+                            if ($enabledServices.Count -gt 0) {
+                                ""$($enabledServices.Count)/$totalServiceCount enabled ($($enabledServices -join ', '))""
+                            } else {
+                                ""$($enabledServices.Count)/$totalServiceCount enabled (All disabled)""
+                            }
+                        } else { 'No services' }
+
+                        # Create custom object with all details
+                        [PSCustomObject]@{
+                            Name = $vm.Name
+                            VMId = $vm.VMId
+                            Id = $vm.Id
+                            State = $vm.State
+                            Enabled = if ($vm.PSObject.Properties['Enabled']) { $vm.Enabled } else { $true }
+                            ProcessorCount = if ($vmProcessor) { $vmProcessor.Count } else { 1 }
+                            CPUUsage = $vm.CPUUsage
+                            MemoryAssigned = $vm.MemoryAssigned
+                            MemoryDemand = $vm.MemoryDemand
+                            MemoryStartup = if ($vmMemory) { $vmMemory.Startup } else { $vm.MemoryStartup }
+                            DynamicMemoryEnabled = $vm.DynamicMemoryEnabled
+                            Generation = $vm.Generation
+                            Uptime = $vm.Uptime
+                            Heartbeat = $vm.Heartbeat
+                            IntegrationServicesDisplay = $integrationServicesDisplay
+                            AutomaticStartAction = $vm.AutomaticStartAction
+                            AutomaticStopAction = $vm.AutomaticStopAction
+                            CheckpointType = $vm.CheckpointType
+                            ReplicationState = $vm.ReplicationState
+                            CreationTime = $vm.CreationTime
+                            IsClustered = $vm.IsClustered
+                            IsDeleted = if ($vm.PSObject.Properties['IsDeleted']) { $vm.IsDeleted } else { $false }
+                            TotalDiskSizeGB = $totalDiskSizeGB
+                            NetworkAdapterCount = $vmNetworkAdapters.Count
+                            CheckpointCount = $vmCheckpoints.Count
+                            ComputerName = $env:COMPUTERNAME
+                        }
+                    }
+                ";
+
+                var results = ExecutePowerShellCommand(getDetailedVMsScript);
+
+                Message($"Retrieved {results?.Count ?? 0} VMs with detailed properties",
+                    EventType.Information, 2191);
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                Message($"Error getting detailed VMs for standalone host: {ex.Message}",
+                    EventType.Error, 2192);
+                return null;
             }
         }
 
@@ -2927,13 +3094,13 @@ namespace HyperView.Forms
 
 
                 // Update status strip
-                toolStripStatusLabelTextMainForm.Text = "VM Overview Loaded";
+                toolStripStatusLabelTextMainForm.Text = @"VM Overview Loaded";
 
                 // Show summary message
-                /*MessageBox.Show(summaryText,
-                    "VM Overview Loaded",
+                MessageBox.Show(summaryText,
+                    @"VM Overview Loaded",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);*/
+                    MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -4715,6 +4882,692 @@ Would you like to open the file location?",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void buttonLoadvCheckpointsrefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Message("User requested VM checkpoints refresh",
+                    EventType.Information, 6050);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show(@"No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        @"Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                toolStripStatusLabelTextMainForm.Text = @"Loading VM checkpoints...";
+
+                Message("Retrieving VM checkpoints...",
+                    EventType.Information, 6051);
+
+                // Execute with progress form
+                ExecuteWithProgressForm(() =>
+                {
+                    // Load checkpoint data on UI thread (must invoke because it manipulates DataGridView)
+                    Invoke((MethodInvoker)delegate
+                    {
+                        LoadVmCheckpoints();
+                    });
+
+                    // Count checkpoints from the grid on UI thread
+                    int totalCheckpoints = 0;
+                    int standardCheckpoints = 0;
+                    int productionCheckpoints = 0;
+
+                    Invoke((MethodInvoker)delegate
+                    {
+                        totalCheckpoints = datagridviewCheckpointOverView.Rows.Count;
+
+                        foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
+                        {
+                            var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                            if (type == "Standard")
+                                standardCheckpoints++;
+                            else if (type == "Production")
+                                productionCheckpoints++;
+                        }
+
+                        Message($"VM checkpoints refresh completed - Total: {totalCheckpoints}, Standard: {standardCheckpoints}, Production: {productionCheckpoints}",
+                            EventType.Information, 6052);
+
+                        toolStripStatusLabelTextMainForm.Text = $"VM checkpoints loaded - Total: {totalCheckpoints}, Standard: {standardCheckpoints}, Production: {productionCheckpoints}";
+                    });
+
+                }, "VM Checkpoints Refresh");
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error refreshing VM checkpoints: {ex.Message}";
+                Message(errorMsg, EventType.Error, 6053);
+
+                MessageBox.Show(errorMsg,
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void buttonSummaryvCheckpointsView_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Message("User requested VM checkpoints summary",
+                    EventType.Information, 6054);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show(@"No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        @"Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                // Check if we have checkpoint data
+                if (datagridviewCheckpointOverView == null || datagridviewCheckpointOverView.Rows.Count == 0)
+                {
+                    MessageBox.Show(@"No checkpoint data available. Please load checkpoints first.",
+                        @"No Data",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                Cursor = Cursors.WaitCursor;
+
+                // Calculate checkpoint statistics
+                int totalCheckpoints = datagridviewCheckpointOverView.Rows.Count;
+                int standardCheckpoints = 0;
+                int productionCheckpoints = 0;
+                long totalSizeMb = 0;
+                var uniqueVMs = new HashSet<string>();
+                var oldestCheckpoint = DateTime.MaxValue;
+                var newestCheckpoint = DateTime.MinValue;
+                var checkpointsByVm = new Dictionary<string, int>();
+
+                foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
+                {
+                    // VM tracking
+                    var vmName = row.Cells["VM Name"]?.Value?.ToString();
+                    if (!string.IsNullOrEmpty(vmName))
+                    {
+                        uniqueVMs.Add(vmName);
+
+                        if (!checkpointsByVm.ContainsKey(vmName))
+                            checkpointsByVm[vmName] = 0;
+                        checkpointsByVm[vmName]++;
+                    }
+
+                    // Checkpoint type
+                    var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                    if (type == "Standard")
+                        standardCheckpoints++;
+                    else if (type == "Production")
+                        productionCheckpoints++;
+
+                    // Size
+                    var sizeStr = row.Cells["Size (MB)"]?.Value?.ToString();
+                    if (!string.IsNullOrEmpty(sizeStr) && long.TryParse(sizeStr, out long sizeMb))
+                        totalSizeMb += sizeMb;
+
+                    // Dates
+                    var createdStr = row.Cells["Created"]?.Value?.ToString();
+                    if (!string.IsNullOrEmpty(createdStr) && DateTime.TryParse(createdStr, out DateTime created))
+                    {
+                        if (created < oldestCheckpoint)
+                            oldestCheckpoint = created;
+                        if (created > newestCheckpoint)
+                            newestCheckpoint = created;
+                    }
+                }
+
+                // Find VM with most checkpoints
+                string vmWithMostCheckpoints = "";
+                int maxCheckpoints = 0;
+                foreach (var kvp in checkpointsByVm)
+                {
+                    if (kvp.Value > maxCheckpoints)
+                    {
+                        maxCheckpoints = kvp.Value;
+                        vmWithMostCheckpoints = kvp.Key;
+                    }
+                }
+
+                Cursor = Cursors.Default;
+
+                // Create summary message
+                string summaryText = $@"VM Checkpoints Summary - {SessionContext.ServerName}
+
+📊 Checkpoint Statistics:
+• Total Checkpoints: {totalCheckpoints}
+• Standard Checkpoints: {standardCheckpoints}
+• Production Checkpoints: {productionCheckpoints}
+• VMs with Checkpoints: {uniqueVMs.Count}
+
+💾 Storage Usage:
+• Total Size: {Math.Round(totalSizeMb / 1024.0, 2):N2} GB ({totalSizeMb:N0} MB)
+• Average per Checkpoint: {(totalCheckpoints > 0 ? Math.Round(totalSizeMb / (double)totalCheckpoints, 2) : 0):N2} MB
+
+📅 Age Information:
+• Oldest Checkpoint: {(oldestCheckpoint != DateTime.MaxValue ? oldestCheckpoint.ToString("yyyy-MM-dd HH:mm") : "N/A")}
+• Newest Checkpoint: {(newestCheckpoint != DateTime.MinValue ? newestCheckpoint.ToString("yyyy-MM-dd HH:mm") : "N/A")}
+
+🔝 Top VM:
+• Most Checkpoints: {vmWithMostCheckpoints} ({maxCheckpoints} checkpoint{(maxCheckpoints != 1 ? "s" : "")})
+
+💡 Recommendations:
+{GetCheckpointRecommendations(totalCheckpoints, standardCheckpoints, productionCheckpoints, totalSizeMb, oldestCheckpoint)}";
+
+                Message($"VM checkpoints summary generated - Total: {totalCheckpoints}",
+                    EventType.Information, 6055);
+
+                // Show summary message
+                MessageBox.Show(summaryText,
+                    @"VM Checkpoints Summary",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Cursor = Cursors.Default;
+
+                string errorMsg = $"Error generating VM checkpoints summary: {ex.Message}";
+                Message(errorMsg, EventType.Error, 6056);
+
+                MessageBox.Show(errorMsg,
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Loads VM checkpoints from all VMs and displays them in the DataGridView
+        /// </summary>
+        private void LoadVmCheckpoints()
+        {
+            try
+            {
+                Message($"Loading VM checkpoints from '{SessionContext.ServerName}'",
+                    EventType.Information, 6057);
+
+                // Clear existing data
+                datagridviewCheckpointOverView.DataSource = null;
+                datagridviewCheckpointOverView.Rows.Clear();
+                datagridviewCheckpointOverView.Columns.Clear();
+
+                // Get all checkpoints
+                string getCheckpointsScript = @"
+                    $ErrorActionPreference = 'SilentlyContinue'
+                    $vms = Get-VM
+                    
+                    if (-not $vms) {
+                        # No VMs found, return empty
+                        return
+                    }
+                    
+                    foreach ($vm in $vms) {
+                        try {
+                            $checkpoints = Get-VMSnapshot -VMName $vm.Name -ErrorAction SilentlyContinue
+                            
+                            if (-not $checkpoints) {
+                                # No checkpoints for this VM
+                                continue
+                            }
+                            
+                            foreach ($checkpoint in $checkpoints) {
+                                # Get checkpoint file size if available
+                                $sizeBytes = 0
+                                try {
+                                    if ($checkpoint.Path -and (Test-Path $checkpoint.Path -ErrorAction SilentlyContinue)) {
+                                        $files = Get-ChildItem -Path $checkpoint.Path -Recurse -File -ErrorAction SilentlyContinue
+                                        if ($files) {
+                                            $sum = ($files | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+                                            if ($sum) {
+                                                $sizeBytes = $sum
+                                            }
+                                        }
+                                    }
+                                } catch {
+                                    # Silently continue if size calculation fails
+                                    $sizeBytes = 0
+                                }
+                                
+                                # Output the object (PowerShell will collect all outputs automatically)
+                                [PSCustomObject]@{
+                                    VMName = $vm.Name
+                                    VMId = $vm.VMId
+                                    VMState = $vm.State
+                                    CheckpointName = $checkpoint.Name
+                                    CheckpointId = $checkpoint.Id
+                                    SnapshotType = $checkpoint.SnapshotType
+                                    CreationTime = $checkpoint.CreationTime
+                                    ParentCheckpointName = $checkpoint.ParentSnapshotName
+                                    ParentCheckpointId = $checkpoint.ParentSnapshotId
+                                    Path = $checkpoint.Path
+                                    SizeBytes = $sizeBytes
+                                    Notes = $checkpoint.Notes
+                                    ComputerName = $env:COMPUTERNAME
+                                }
+                            }
+                        } catch {
+                            # Skip VMs that error
+                            continue
+                        }
+                    }
+                ";
+
+                System.Collections.ObjectModel.Collection<PSObject> results;
+
+                if (SessionContext.IsCluster && !SessionContext.IsLocal)
+                {
+                    Message("Getting checkpoints from cluster nodes...",
+                        EventType.Information, 6058);
+
+                    // Get cluster nodes
+                    var nodesResult = ExecutePowerShellCommand("Get-ClusterNode -ErrorAction Stop | Select-Object -ExpandProperty Name");
+                    
+                    if (nodesResult != null && nodesResult.Count > 0)
+                    {
+                        var allCheckpoints = new System.Collections.ObjectModel.Collection<PSObject>();
+                        
+                        foreach (var nodeObj in nodesResult)
+                        {
+                            string nodeName = nodeObj.BaseObject?.ToString();
+                            if (!string.IsNullOrEmpty(nodeName))
+                            {
+                                try
+                                {
+                                    var nodeCheckpoints = ExecutePowerShellCommandOnNode(nodeName, getCheckpointsScript);
+                                    if (nodeCheckpoints != null)
+                                    {
+                                        foreach (var checkpoint in nodeCheckpoints)
+                                        {
+                                            allCheckpoints.Add(checkpoint);
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Message($"Failed to get checkpoints from node {nodeName}: {ex.Message}",
+                                        EventType.Warning, 6059);
+                                }
+                            }
+                        }
+                        
+                        results = allCheckpoints;
+                    }
+                    else
+                    {
+                        results = ExecutePowerShellCommand(getCheckpointsScript);
+                    }
+                }
+                else
+                {
+                    // Standard retrieval for standalone or local
+                    results = ExecutePowerShellCommand(getCheckpointsScript);
+                }
+
+                if (results == null || results.Count == 0)
+                {
+                    MessageBox.Show(@"No VM checkpoints found.",
+                        @"Information",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    return;
+                }
+
+                Message($"Retrieved {results.Count} checkpoints, processing...",
+                    EventType.Information, 6060);
+
+                // Create DataTable with checkpoint columns
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("VM Name", typeof(string));
+                dataTable.Columns.Add("VM State", typeof(string));
+                dataTable.Columns.Add("Checkpoint Name", typeof(string));
+                dataTable.Columns.Add("Checkpoint Type", typeof(string));
+                dataTable.Columns.Add("Created", typeof(string));
+                dataTable.Columns.Add("Age (Days)", typeof(string));
+                dataTable.Columns.Add("Parent Checkpoint", typeof(string));
+                dataTable.Columns.Add("Size (MB)", typeof(string));
+                dataTable.Columns.Add("Path", typeof(string));
+                dataTable.Columns.Add("Notes", typeof(string));
+                dataTable.Columns.Add("Host", typeof(string));
+                dataTable.Columns.Add("Checkpoint ID", typeof(string));
+                dataTable.Columns.Add("VM ID", typeof(string));
+
+                foreach (var checkpoint in results)
+                {
+                    var row = dataTable.NewRow();
+                    
+                    row["VM Name"] = checkpoint.Properties["VMName"]?.Value?.ToString() ?? "";
+                    row["VM State"] = checkpoint.Properties["VMState"]?.Value?.ToString() ?? "";
+                    row["Checkpoint Name"] = checkpoint.Properties["CheckpointName"]?.Value?.ToString() ?? "";
+                    
+                    var snapshotType = checkpoint.Properties["SnapshotType"]?.Value?.ToString() ?? "";
+                    row["Checkpoint Type"] = snapshotType;
+                    
+                    var creationTime = checkpoint.Properties["CreationTime"]?.Value;
+                    if (creationTime != null && creationTime is DateTime dt)
+                    {
+                        row["Created"] = dt.ToString("yyyy-MM-dd HH:mm:ss");
+                        row["Age (Days)"] = Math.Round((DateTime.Now - dt).TotalDays, 1).ToString();
+                    }
+                    else
+                    {
+                        row["Created"] = "";
+                        row["Age (Days)"] = "";
+                    }
+                    
+                    row["Parent Checkpoint"] = checkpoint.Properties["ParentCheckpointName"]?.Value?.ToString() ?? "None";
+                    
+                    var sizeBytes = checkpoint.Properties["SizeBytes"]?.Value;
+                    if (sizeBytes != null && long.TryParse(sizeBytes.ToString(), out long bytes))
+                    {
+                        row["Size (MB)"] = Math.Round(bytes / (1024.0 * 1024.0), 2).ToString();
+                    }
+                    else
+                    {
+                        row["Size (MB)"] = "0";
+                    }
+                    
+                    row["Path"] = checkpoint.Properties["Path"]?.Value?.ToString() ?? "";
+                    row["Notes"] = checkpoint.Properties["Notes"]?.Value?.ToString() ?? "";
+                    row["Host"] = checkpoint.Properties["ComputerName"]?.Value?.ToString() ?? SessionContext.ServerName;
+                    row["Checkpoint ID"] = checkpoint.Properties["CheckpointId"]?.Value?.ToString() ?? "";
+                    row["VM ID"] = checkpoint.Properties["VMId"]?.Value?.ToString() ?? "";
+
+                    dataTable.Rows.Add(row);
+                }
+
+                // Bind to DataGridView
+                datagridviewCheckpointOverView.DataSource = dataTable;
+
+                // Configure DataGridView properties
+                datagridviewCheckpointOverView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                datagridviewCheckpointOverView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                datagridviewCheckpointOverView.MultiSelect = false;
+                datagridviewCheckpointOverView.ReadOnly = true;
+                datagridviewCheckpointOverView.AllowUserToAddRows = false;
+                datagridviewCheckpointOverView.AllowUserToDeleteRows = false;
+                datagridviewCheckpointOverView.RowHeadersVisible = false;
+
+                // Add context menu for right-click
+                var contextMenu = new ContextMenuStrip();
+                var deleteMenuItem = new ToolStripMenuItem("Delete Checkpoint");
+                deleteMenuItem.Click += DeleteCheckpointMenuItem_Click;
+                contextMenu.Items.Add(deleteMenuItem);
+                
+                var viewDetailsMenuItem = new ToolStripMenuItem("View Details");
+                viewDetailsMenuItem.Click += ViewCheckpointDetailsMenuItem_Click;
+                contextMenu.Items.Add(viewDetailsMenuItem);
+                
+                datagridviewCheckpointOverView.ContextMenuStrip = contextMenu;
+
+                // Apply color coding
+                foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
+                {
+                    // Color code checkpoint type
+                    var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                    if (type == "Standard")
+                    {
+                        row.Cells["Checkpoint Type"].Style.BackColor = Color.LightBlue;
+                    }
+                    else if (type == "Production")
+                    {
+                        row.Cells["Checkpoint Type"].Style.BackColor = Color.LightGreen;
+                    }
+
+                    // Color code age - highlight old checkpoints
+                    var ageStr = row.Cells["Age (Days)"]?.Value?.ToString();
+                    if (!string.IsNullOrEmpty(ageStr) && double.TryParse(ageStr, out double age))
+                    {
+                        if (age > 90)
+                        {
+                            row.Cells["Age (Days)"].Style.BackColor = Color.LightCoral;
+                            row.Cells["Age (Days)"].Style.ForeColor = Color.DarkRed;
+                        }
+                        else if (age > 30)
+                        {
+                            row.Cells["Age (Days)"].Style.BackColor = Color.LightYellow;
+                            row.Cells["Age (Days)"].Style.ForeColor = Color.DarkOrange;
+                        }
+                    }
+
+                    // Color code VM state
+                    var state = row.Cells["VM State"]?.Value?.ToString();
+                    if (state == "Running")
+                    {
+                        row.Cells["VM State"].Style.BackColor = Color.LightGreen;
+                    }
+                    else if (state == "Off")
+                    {
+                        row.Cells["VM State"].Style.BackColor = Color.LightGray;
+                    }
+                }
+
+                Message($"VM checkpoints loaded successfully with {results.Count} checkpoint(s)",
+                    EventType.Information, 6061);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error loading VM checkpoints: {ex.Message}",
+                    EventType.Error, 6062);
+                MessageBox.Show($@"Error loading VM checkpoints: {ex.Message}",
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Handles the delete checkpoint context menu click
+        /// </summary>
+        private void DeleteCheckpointMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (datagridviewCheckpointOverView.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show(@"Please select a checkpoint to delete.",
+                        @"No Selection",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    return;
+                }
+
+                var selectedRow = datagridviewCheckpointOverView.SelectedRows[0];
+                string vmName = selectedRow.Cells["VM Name"]?.Value?.ToString();
+                string checkpointName = selectedRow.Cells["Checkpoint Name"]?.Value?.ToString();
+                string checkpointType = selectedRow.Cells["Checkpoint Type"]?.Value?.ToString();
+
+                if (string.IsNullOrEmpty(vmName) || string.IsNullOrEmpty(checkpointName))
+                {
+                    MessageBox.Show(@"Invalid checkpoint selection.",
+                        @"Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                Message($"User requested deletion of checkpoint '{checkpointName}' on VM '{vmName}'",
+                    EventType.Information, 6063);
+
+                // Confirmation dialog
+                var confirmResult = MessageBox.Show(
+                    $@"Are you sure you want to delete this checkpoint?
+
+VM: {vmName}
+Checkpoint: {checkpointName}
+Type: {checkpointType}
+
+This action cannot be undone!",
+                    @"Confirm Checkpoint Deletion",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (confirmResult != DialogResult.Yes)
+                {
+                    Message("Checkpoint deletion cancelled by user",
+                        EventType.Information, 6064);
+                    return;
+                }
+
+                Cursor = Cursors.WaitCursor;
+
+                // Delete the checkpoint
+                string deleteScript = $@"
+                    Remove-VMSnapshot -VMName '{vmName}' -Name '{checkpointName}' -ErrorAction Stop
+                ";
+
+                Message($"Deleting checkpoint '{checkpointName}' on VM '{vmName}'...",
+                    EventType.Information, 6065);
+
+                var result = ExecutePowerShellCommand(deleteScript);
+
+                if (result != null)
+                {
+                    Message($"Checkpoint '{checkpointName}' deleted successfully",
+                        EventType.Information, 6066);
+
+                    MessageBox.Show($@"Checkpoint '{checkpointName}' deleted successfully.
+
+Note: The checkpoint files will be merged in the background, which may take some time depending on the size.",
+                        @"Checkpoint Deleted",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+
+                    // Refresh the checkpoint view
+                    LoadVmCheckpoints();
+                }
+                else
+                {
+                    Message($"Failed to delete checkpoint '{checkpointName}'",
+                        EventType.Error, 6067);
+
+                    MessageBox.Show(@"Failed to delete checkpoint. Check the logs for details.",
+                        @"Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error deleting checkpoint: {ex.Message}";
+                Message(errorMsg, EventType.Error, 6068);
+
+                MessageBox.Show(errorMsg,
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+        /// <summary>
+        /// Handles the view checkpoint details context menu click
+        /// </summary>
+        private void ViewCheckpointDetailsMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (datagridviewCheckpointOverView.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show(@"Please select a checkpoint to view details.",
+                        @"No Selection",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    return;
+                }
+
+                var selectedRow = datagridviewCheckpointOverView.SelectedRows[0];
+
+                string details = $@"Checkpoint Details
+
+VM Information:
+• VM Name: {selectedRow.Cells["VM Name"]?.Value}
+• VM State: {selectedRow.Cells["VM State"]?.Value}
+• VM ID: {selectedRow.Cells["VM ID"]?.Value}
+
+Checkpoint Information:
+• Name: {selectedRow.Cells["Checkpoint Name"]?.Value}
+• Type: {selectedRow.Cells["Checkpoint Type"]?.Value}
+• Created: {selectedRow.Cells["Created"]?.Value}
+• Age: {selectedRow.Cells["Age (Days)"]?.Value} days
+• Size: {selectedRow.Cells["Size (MB)"]?.Value} MB
+
+Hierarchy:
+• Parent Checkpoint: {selectedRow.Cells["Parent Checkpoint"]?.Value}
+
+Storage:
+• Path: {selectedRow.Cells["Path"]?.Value}
+• Host: {selectedRow.Cells["Host"]?.Value}
+
+Notes:
+{selectedRow.Cells["Notes"]?.Value}";
+
+                MessageBox.Show(details,
+                    @"Checkpoint Details",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error showing checkpoint details: {ex.Message}",
+                    EventType.Error, 6069);
+            }
+        }
+
+        /// <summary>
+        /// Generates recommendations based on checkpoint statistics
+        /// </summary>
+        private string GetCheckpointRecommendations(int totalCheckpoints, int standardCheckpoints, 
+            int productionCheckpoints, long totalSizeMb, DateTime oldestCheckpoint)
+        {
+            var recommendations = new List<string>();
+
+            // Too many checkpoints
+            if (totalCheckpoints > 50)
+            {
+                recommendations.Add($"• High number of checkpoints ({totalCheckpoints}) - consider removing old or unnecessary ones");
+            }
+
+            // Old checkpoints
+            if (oldestCheckpoint != DateTime.MaxValue)
+            {
+                var age = (DateTime.Now - oldestCheckpoint).TotalDays;
+                if (age > 90)
+                {
+                    recommendations.Add($"• Oldest checkpoint is {Math.Round(age, 0)} days old - review and remove if no longer needed");
+                }
+            }
+
+            // Storage usage
+            double totalSizeGb = totalSizeMb / 1024.0;
+            if (totalSizeGb > 100)
+            {
+                recommendations.Add($"• High storage usage ({Math.Round(totalSizeGb, 2)} GB) - checkpoints consume significant disk space");
+            }
+
+            // Standard vs Production
+            if (standardCheckpoints > productionCheckpoints * 3 && productionCheckpoints > 0)
+            {
+                recommendations.Add("• Consider using Production checkpoints for better backup consistency");
+            }
+
+            return recommendations.Count > 0
+                ? string.Join("\n", recommendations)
+                : "• Checkpoint management looks good - no immediate actions needed";
         }
     }
 }

@@ -400,7 +400,7 @@ Get-LocalGroupMember -Group "Remote Management Users"</pre>
         <div class="container">
             <div class="section-header">
                 <h2>🌐 Network Requirements</h2>
-                <p>Firewall ports and connectivity needed for remote management</p>
+                <p>Firewall ports and connectivity needed for remote management (need review...)</p>
             </div>
             <div class="doc-content">
                 <div class="doc-card">
@@ -433,7 +433,6 @@ Get-LocalGroupMember -Group "Remote Management Users"</pre>
                         <li>✅ <strong>Windows Remote Management (HTTP-In)</strong> - For PowerShell remoting</li>
                         <li>✅ <strong>Windows Management Instrumentation (WMI)</strong> - All WMI rules</li>
                         <li>✅ <strong>Remote Event Log Management</strong> - For event log queries</li>
-                        <li>✅ <strong>File and Printer Sharing</strong> - For SMB access</li>
                         <li>✅ <strong>Hyper-V Management Clients</strong> - For VM management</li>
                         <li>✅ <strong>Failover Cluster Manager</strong> - For cluster environments</li>
                     </ul>
@@ -456,7 +455,6 @@ Enable-NetFirewallRule -DisplayGroup "Hyper-V Management Clients"</pre>
                         <li>🔗 <strong>WS-Management (WinRM)</strong> - PowerShell remoting for advanced operations</li>
                         <li>🔗 <strong>Kerberos</strong> - Preferred authentication in domain environments</li>
                         <li>🔗 <strong>NTLM</strong> - Fallback authentication for workgroup scenarios</li>
-                        <li>🔗 <strong>SMB</strong> - For file operations and named pipe communication</li>
                     </ul>
                 </div>
 

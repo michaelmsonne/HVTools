@@ -1659,3 +1659,10 @@ section {
         justify-content: center;
     }
 }
+
+/* ===== Brand Author Small Text ===== */
+.brand-author {
+    font-size: 0.7em;
+    font-weight: 400;
+    opacity: 0.8;
+}

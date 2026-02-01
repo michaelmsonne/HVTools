@@ -990,6 +990,7 @@
             buttonSummaryHealthOverviewView.TabIndex = 7;
             buttonSummaryHealthOverviewView.Text = "Summary";
             buttonSummaryHealthOverviewView.UseVisualStyleBackColor = true;
+            buttonSummaryHealthOverviewView.Click += buttonSummaryHealthOverview_Click;
             // 
             // buttonLoadHealthOverview
             // 
@@ -1000,6 +1001,7 @@
             buttonLoadHealthOverview.TabIndex = 6;
             buttonLoadHealthOverview.Text = "&Load overview/refresh";
             buttonLoadHealthOverview.UseVisualStyleBackColor = true;
+            buttonLoadHealthOverview.Click += buttonLoadHealthOverview_Click;
             // 
             // labelHealthOverviewText
             // 

@@ -245,7 +245,7 @@ namespace HVTools.Forms
                         {
                             Message("Retrieving domain information from remote machine...",
                                 EventType.Information, 2240);
-                            
+
                             string getDomainScript = @"
                                 $computerSystem = Get-WmiObject -Class Win32_ComputerSystem
                                 if ($computerSystem.PartOfDomain) {
@@ -256,9 +256,9 @@ namespace HVTools.Forms
                                     $env:COMPUTERNAME
                                 }
                             ";
-                            
+
                             var domainResult = ExecutePowerShellCommand(getDomainScript);
-                            
+
                             if (domainResult != null && domainResult.Count > 0)
                             {
                                 string remoteDomain = domainResult[0].BaseObject?.ToString();
@@ -295,7 +295,7 @@ namespace HVTools.Forms
                     // Local connection - use current user with domain
                     string currentUser = Environment.UserName;
                     string domain = Environment.UserDomainName;
-                    
+
                     if (!string.IsNullOrEmpty(domain) && domain != Environment.MachineName)
                     {
                         username = $"{domain}\\{currentUser}";
@@ -305,9 +305,9 @@ namespace HVTools.Forms
                         username = currentUser;
                     }
                 }
-                
+
                 string clusterInfo = SessionContext.IsCluster ? " - Cluster" : " - Standalone";
-                
+
                 // Get hostname if connected via IP address
                 string? serverDisplay = SessionContext.ServerName;
                 if (System.Net.IPAddress.TryParse(SessionContext.ServerName?.Split('.')[0], out _))
@@ -317,10 +317,10 @@ namespace HVTools.Forms
                     {
                         Message("Detected IP address connection, retrieving hostname...",
                             EventType.Information, 2237);
-                        
+
                         string getHostnameScript = "$env:COMPUTERNAME";
                         var hostnameResult = ExecutePowerShellCommand(getHostnameScript);
-                        
+
                         if (hostnameResult != null && hostnameResult.Count > 0)
                         {
                             string hostname = hostnameResult[0].BaseObject?.ToString();
@@ -338,7 +338,7 @@ namespace HVTools.Forms
                             EventType.Warning, 2239);
                     }
                 }
-                
+
                 Text = $@"{Globals.ToolName.ShortName} - Connected to {serverDisplay} as {username} ({SessionContext.ConnectionType}{clusterInfo})";
             }
             catch (Exception ex)
@@ -1207,9 +1207,9 @@ namespace HVTools.Forms
                             if (ps.HadErrors)
                             {
                                 // Only log actual error messages (not empty errors from SilentlyContinue)
-                                var actualErrors = ps.Streams.Error.Where(e => 
-                                    e != null && 
-                                    e.Exception != null && 
+                                var actualErrors = ps.Streams.Error.Where(e =>
+                                    e != null &&
+                                    e.Exception != null &&
                                     !string.IsNullOrWhiteSpace(e.Exception.Message))
                                     .ToList();
 
@@ -1251,9 +1251,9 @@ namespace HVTools.Forms
                         if (ps.HadErrors)
                         {
                             // Only log actual error messages (not empty errors from SilentlyContinue)
-                            var actualErrors = ps.Streams.Error.Where(e => 
-                                e != null && 
-                                e.Exception != null && 
+                            var actualErrors = ps.Streams.Error.Where(e =>
+                                e != null &&
+                                e.Exception != null &&
                                 !string.IsNullOrWhiteSpace(e.Exception.Message))
                                 .ToList();
 
@@ -5342,7 +5342,7 @@ Would you like to open the file location?",
                     ";
 
                     var nodesResult = ExecutePowerShellCommand(getNodesScript);
-                    
+
                     if (nodesResult == null || nodesResult.Count == 0)
                     {
                         Message("No cluster nodes found, falling back to standard checkpoint retrieval",
@@ -5352,7 +5352,7 @@ Would you like to open the file location?",
                     else
                     {
                         var allCheckpoints = new System.Collections.ObjectModel.Collection<PSObject>();
-                        
+
                         // Build list of cluster nodes
                         var clusterNodes = new List<string>();
                         foreach (var nodeObj in nodesResult)
@@ -5384,7 +5384,7 @@ Would you like to open the file location?",
                                     EventType.Information, 6072);
 
                                 var nodeCheckpoints = ExecutePowerShellCommandOnNode(node, getCheckpointsScript);
-                                
+
                                 if (nodeCheckpoints != null && nodeCheckpoints.Count > 0)
                                 {
                                     foreach (var checkpoint in nodeCheckpoints)
@@ -5407,7 +5407,7 @@ Would you like to open the file location?",
                                 // Continue processing other nodes
                             }
                         }
-                        
+
                         Message($"Total checkpoints collected from all cluster nodes: {allCheckpoints.Count}",
                             EventType.Information, 6076);
 
@@ -5434,13 +5434,13 @@ Would you like to open the file location?",
 
                 // Create DataTable with comprehensive checkpoint columns
                 var dataTable = new DataTable();
-                
+
                 // VM Information
                 dataTable.Columns.Add("VM Name", typeof(string));
                 dataTable.Columns.Add("VM State", typeof(string));
                 dataTable.Columns.Add("VM Generation", typeof(string));
                 dataTable.Columns.Add("VM ID", typeof(string));
-                
+
                 // Checkpoint Basic Information
                 dataTable.Columns.Add("Checkpoint Name", typeof(string));
                 dataTable.Columns.Add("Checkpoint Type", typeof(string));
@@ -5448,45 +5448,45 @@ Would you like to open the file location?",
                 dataTable.Columns.Add("Is Automatic", typeof(string));
                 dataTable.Columns.Add("Created", typeof(string));
                 dataTable.Columns.Add("Age (Days)", typeof(string));
-                
+
                 // Hierarchy
                 dataTable.Columns.Add("Parent Checkpoint", typeof(string));
-                
+
                 // Storage
                 dataTable.Columns.Add("Size (MB)", typeof(string));
                 dataTable.Columns.Add("System Files (MB)", typeof(string));
                 dataTable.Columns.Add("Path", typeof(string));
-                
+
                 // Version & Notes
                 dataTable.Columns.Add("Version", typeof(string));
                 dataTable.Columns.Add("Notes", typeof(string));
-                
+
                 // Processor Configuration
                 dataTable.Columns.Add("Processor Count", typeof(string));
-                
+
                 // Memory Configuration
                 dataTable.Columns.Add("Memory Startup (MB)", typeof(string));
                 dataTable.Columns.Add("Memory Minimum (MB)", typeof(string));
                 dataTable.Columns.Add("Memory Maximum (MB)", typeof(string));
                 dataTable.Columns.Add("Dynamic Memory", typeof(string));
-                
+
                 // Hardware Configuration
                 dataTable.Columns.Add("Hard Drives", typeof(string));
                 dataTable.Columns.Add("Network Adapters", typeof(string));
                 dataTable.Columns.Add("DVD Drives", typeof(string));
-                
+
                 // Advanced Properties
                 dataTable.Columns.Add("Battery Passthrough", typeof(string));
                 dataTable.Columns.Add("Is Clustered", typeof(string));
                 dataTable.Columns.Add("Is Deleted", typeof(string));
                 dataTable.Columns.Add("Lock On Disconnect", typeof(string));
-                
+
                 // Advanced Memory Mapped IO
                 dataTable.Columns.Add("Low MMIO Space", typeof(string));
                 dataTable.Columns.Add("High MMIO Space", typeof(string));
                 dataTable.Columns.Add("High MMIO Base Address", typeof(string));
                 dataTable.Columns.Add("Guest Controlled Cache", typeof(string));
-                
+
                 // Host Information
                 dataTable.Columns.Add("Host", typeof(string));
                 dataTable.Columns.Add("Checkpoint ID", typeof(string));
@@ -5494,21 +5494,21 @@ Would you like to open the file location?",
                 foreach (var checkpoint in results)
                 {
                     var row = dataTable.NewRow();
-                    
+
                     // VM Information
                     row["VM Name"] = checkpoint.Properties["VMName"]?.Value?.ToString() ?? "";
                     row["VM State"] = checkpoint.Properties["VMState"]?.Value?.ToString() ?? "";
                     row["VM Generation"] = checkpoint.Properties["VMGeneration"]?.Value?.ToString() ?? "";
                     row["VM ID"] = checkpoint.Properties["VMId"]?.Value?.ToString() ?? "";
-                    
+
                     // Checkpoint Basic Information
                     row["Checkpoint Name"] = checkpoint.Properties["CheckpointName"]?.Value?.ToString() ?? "";
                     row["Checkpoint Type"] = checkpoint.Properties["SnapshotType"]?.Value?.ToString() ?? "";
                     row["State"] = checkpoint.Properties["State"]?.Value?.ToString() ?? "";
-                    
+
                     var isAutomatic = checkpoint.Properties["IsAutomaticCheckpoint"]?.Value;
                     row["Is Automatic"] = (isAutomatic != null && (bool)isAutomatic) ? "Yes" : "No";
-                    
+
                     // Creation Time and Age
                     var creationTime = checkpoint.Properties["CreationTime"]?.Value;
                     if (creationTime != null && creationTime is DateTime dt)
@@ -5521,10 +5521,10 @@ Would you like to open the file location?",
                         row["Created"] = "";
                         row["Age (Days)"] = "";
                     }
-                    
+
                     // Hierarchy
                     row["Parent Checkpoint"] = checkpoint.Properties["ParentCheckpointName"]?.Value?.ToString() ?? "None";
-                    
+
                     // Storage - Size Information
                     var sizeBytes = checkpoint.Properties["SizeBytes"]?.Value;
                     if (sizeBytes != null && long.TryParse(sizeBytes.ToString(), out long bytes))
@@ -5535,7 +5535,7 @@ Would you like to open the file location?",
                     {
                         row["Size (MB)"] = "0";
                     }
-                    
+
                     var sizeOfSystemFiles = checkpoint.Properties["SizeOfSystemFiles"]?.Value;
                     if (sizeOfSystemFiles != null && long.TryParse(sizeOfSystemFiles.ToString(), out long systemFilesBytes))
                     {
@@ -5545,16 +5545,16 @@ Would you like to open the file location?",
                     {
                         row["System Files (MB)"] = "0";
                     }
-                    
+
                     row["Path"] = checkpoint.Properties["Path"]?.Value?.ToString() ?? "";
-                    
+
                     // Version & Notes
                     row["Version"] = checkpoint.Properties["Version"]?.Value?.ToString() ?? "N/A";
                     row["Notes"] = checkpoint.Properties["Notes"]?.Value?.ToString() ?? "";
-                    
+
                     // Processor Configuration
                     row["Processor Count"] = checkpoint.Properties["ProcessorCount"]?.Value?.ToString() ?? "0";
-                    
+
                     // Memory Configuration
                     var memoryStartup = checkpoint.Properties["MemoryStartup"]?.Value;
                     if (memoryStartup != null && long.TryParse(memoryStartup.ToString(), out long memStartupBytes))
@@ -5565,7 +5565,7 @@ Would you like to open the file location?",
                     {
                         row["Memory Startup (MB)"] = "0";
                     }
-                    
+
                     var memoryMinimum = checkpoint.Properties["MemoryMinimum"]?.Value;
                     if (memoryMinimum != null && long.TryParse(memoryMinimum.ToString(), out long memMinBytes))
                     {
@@ -5575,7 +5575,7 @@ Would you like to open the file location?",
                     {
                         row["Memory Minimum (MB)"] = "0";
                     }
-                    
+
                     var memoryMaximum = checkpoint.Properties["MemoryMaximum"]?.Value;
                     if (memoryMaximum != null && long.TryParse(memoryMaximum.ToString(), out long memMaxBytes))
                     {
@@ -5585,40 +5585,40 @@ Would you like to open the file location?",
                     {
                         row["Memory Maximum (MB)"] = "0";
                     }
-                    
+
                     var dynamicMemory = checkpoint.Properties["DynamicMemoryEnabled"]?.Value;
                     row["Dynamic Memory"] = (dynamicMemory != null && (bool)dynamicMemory) ? "Yes" : "No";
-                    
+
                     // Hardware Configuration
                     row["Hard Drives"] = checkpoint.Properties["HardDrivesCount"]?.Value?.ToString() ?? "0";
                     row["Network Adapters"] = checkpoint.Properties["NetworkAdaptersCount"]?.Value?.ToString() ?? "0";
                     row["DVD Drives"] = checkpoint.Properties["DVDDrivesCount"]?.Value?.ToString() ?? "0";
-                    
+
                     // Advanced Properties
                     var batteryPassthrough = checkpoint.Properties["BatteryPassthroughEnabled"]?.Value;
                     row["Battery Passthrough"] = (batteryPassthrough != null && (bool)batteryPassthrough) ? "Yes" : "No";
-                    
+
                     var isClustered = checkpoint.Properties["IsClustered"]?.Value;
                     row["Is Clustered"] = (isClustered != null && (bool)isClustered) ? "Yes" : "No";
-                    
+
                     var isDeleted = checkpoint.Properties["IsDeleted"]?.Value;
                     row["Is Deleted"] = (isDeleted != null && (bool)isDeleted) ? "Yes" : "No";
-                    
+
                     row["Lock On Disconnect"] = checkpoint.Properties["LockOnDisconnect"]?.Value?.ToString() ?? "Off";
-                    
+
                     // Advanced Memory Mapped IO
                     var lowMMIO = checkpoint.Properties["LowMemoryMappedIoSpace"]?.Value;
                     row["Low MMIO Space"] = lowMMIO != null ? lowMMIO.ToString() : "0";
-                    
+
                     var highMMIO = checkpoint.Properties["HighMemoryMappedIoSpace"]?.Value;
                     row["High MMIO Space"] = highMMIO != null ? highMMIO.ToString() : "0";
-                    
+
                     var highMMIOBase = checkpoint.Properties["HighMemoryMappedIoBaseAddress"]?.Value;
                     row["High MMIO Base Address"] = highMMIOBase != null ? highMMIOBase.ToString() : "0";
-                    
+
                     var guestCache = checkpoint.Properties["GuestControlledCacheTypes"]?.Value;
                     row["Guest Controlled Cache"] = (guestCache != null && (bool)guestCache) ? "Yes" : "No";
-                    
+
                     // Host Information
                     row["Host"] = checkpoint.Properties["ComputerName"]?.Value?.ToString() ?? SessionContext.ServerName;
                     row["Checkpoint ID"] = checkpoint.Properties["CheckpointId"]?.Value?.ToString() ?? "";
@@ -5643,11 +5643,11 @@ Would you like to open the file location?",
                 var deleteMenuItem = new ToolStripMenuItem("Delete Checkpoint");
                 deleteMenuItem.Click += DeleteCheckpointMenuItem_Click;
                 contextMenu.Items.Add(deleteMenuItem);
-                
+
                 var viewDetailsMenuItem = new ToolStripMenuItem("View Details");
                 viewDetailsMenuItem.Click += ViewCheckpointDetailsMenuItem_Click;
                 contextMenu.Items.Add(viewDetailsMenuItem);
-                
+
                 datagridviewCheckpointOverView.ContextMenuStrip = contextMenu;
 
                 // Apply color coding
@@ -5663,7 +5663,7 @@ Would you like to open the file location?",
                     {
                         row.Cells["Checkpoint Type"].Style.BackColor = Color.LightGreen;
                     }
-                    
+
                     // Color code automatic checkpoints
                     var isAutomatic = row.Cells["Is Automatic"]?.Value?.ToString();
                     if (isAutomatic == "Yes")
@@ -5703,7 +5703,7 @@ Would you like to open the file location?",
                     {
                         row.Cells["VM State"].Style.BackColor = Color.LightGray;
                     }
-                    
+
                     // Color code checkpoint state
                     var checkpointState = row.Cells["State"]?.Value?.ToString();
                     if (checkpointState == "Off")
@@ -5714,7 +5714,7 @@ Would you like to open the file location?",
                     {
                         row.Cells["State"].Style.BackColor = Color.LightGreen;
                     }
-                    
+
                     // Color code VM Generation
                     var generation = row.Cells["VM Generation"]?.Value?.ToString();
                     if (generation == "1")
@@ -5725,14 +5725,14 @@ Would you like to open the file location?",
                     {
                         row.Cells["VM Generation"].Style.BackColor = Color.LightCyan;
                     }
-                    
+
                     // Color code Dynamic Memory
                     var dynamicMemory = row.Cells["Dynamic Memory"]?.Value?.ToString();
                     if (dynamicMemory == "Yes")
                     {
                         row.Cells["Dynamic Memory"].Style.BackColor = Color.LightBlue;
                     }
-                    
+
                     // Color code Is Deleted
                     var isDeleted = row.Cells["Is Deleted"]?.Value?.ToString();
                     if (isDeleted == "Yes")
@@ -5951,7 +5951,7 @@ Notes:
         /// <summary>
         /// Generates recommendations based on checkpoint statistics
         /// </summary>
-        private string GetCheckpointRecommendations(int totalCheckpoints, int standardCheckpoints, 
+        private string GetCheckpointRecommendations(int totalCheckpoints, int standardCheckpoints,
             int productionCheckpoints, double totalSizeMb, DateTime oldestCheckpoint)
         {
             var recommendations = new List<string>();
@@ -5988,6 +5988,591 @@ Notes:
             return recommendations.Count > 0
                 ? string.Join("\n", recommendations)
                 : "• Checkpoint management looks good - no immediate actions needed";
+        }
+
+        private void buttonLoadHealthOverview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Message("User requested host health/inventory overview",
+                    EventType.Information, 7100);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show(@"No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        @"Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                toolStripStatusLabelTextMainForm.Text = @"Loading host health inventory...";
+
+                Message("Retrieving host health inventory...",
+                    EventType.Information, 7101);
+
+                // Execute with progress form
+                ExecuteWithProgressForm<HostInventoryInfo?>(() =>
+                {
+                    // Get host inventory (runs in background thread)
+                    Message("Calling HostInventory.GetHyperVHostInventory...",
+                        EventType.Information, 7102);
+
+                    return HostInventory.GetHyperVHostInventory(
+                        cmd => ExecutePowerShellCommand(cmd),
+                        (node, cmd) => ExecutePowerShellCommandOnNode(node, cmd),
+                        includeDetailedVMs: true);
+
+                }, (inventory) =>
+                {
+                    // Handle result on UI thread
+                    try
+                    {
+                        if (inventory != null)
+                        {
+                            Message($"Retrieved host inventory for '{inventory.HostInfo.ComputerName}', updating DataGridView",
+                                EventType.Information, 7103);
+
+                            // Update the DataGridView
+                            UpdateHealthOverviewDataGridView(inventory);
+
+                            // Update status with summary
+                            int totalVMs = inventory.WorkloadAnalysis.TotalVMs;
+                            int runningVMs = inventory.WorkloadAnalysis.RunningVMs;
+                            double cpuOvercommit = inventory.ResourceAllocation.CPUOvercommitRatio;
+                            double memOvercommit = inventory.ResourceAllocation.MemoryOvercommitRatio;
+
+                            toolStripStatusLabelTextMainForm.Text = $"Health inventory loaded - VMs: {totalVMs} ({runningVMs} running), CPU Overcommit: {cpuOvercommit:F2}:1, Memory Overcommit: {memOvercommit:F2}:1";
+
+                            Message($"Host health inventory loaded successfully",
+                                EventType.Information, 7104);
+                        }
+                        else
+                        {
+                            Message("No host inventory data retrieved",
+                                EventType.Warning, 7105);
+
+                            toolStripStatusLabelTextMainForm.Text = @"No health data available";
+
+                            MessageBox.Show(@"No host inventory data found or error retrieving data.",
+                                @"No Data",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Message($"Error updating health overview UI: {ex.Message}",
+                            EventType.Error, 7106);
+
+                        MessageBox.Show($@"Error updating health overview: {ex.Message}",
+                            @"Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+
+                        toolStripStatusLabelTextMainForm.Text = @"Error loading health data";
+                    }
+
+                }, "Host Health Inventory");
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error loading host health inventory: {ex.Message}";
+                Message(errorMsg, EventType.Error, 7107);
+
+                MessageBox.Show(errorMsg,
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                toolStripStatusLabelTextMainForm.Text = @"Error loading health inventory";
+            }
+        }
+
+        /// <summary>
+        /// Updates the datagridviewHealthOverview DataGridView with host inventory details
+        /// </summary>
+        private void UpdateHealthOverviewDataGridView(HostInventoryInfo inventory)
+        {
+            try
+            {
+                if (datagridviewHealthOverview == null)
+                {
+                    Message("datagridviewHealthOverview control not found",
+                        EventType.Warning, 7110);
+                    return;
+                }
+
+                // Clear existing data
+                datagridviewHealthOverview.DataSource = null;
+                datagridviewHealthOverview.Rows.Clear();
+                datagridviewHealthOverview.Columns.Clear();
+
+                if (inventory == null)
+                {
+                    Message("No host inventory to display",
+                        EventType.Information, 7111);
+                    return;
+                }
+
+                Message($"Updating datagridviewHealthOverview with host inventory data",
+                    EventType.Information, 7112);
+
+                // Create DataTable with category and value columns for a property grid-like view
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Category", typeof(string));
+                dataTable.Columns.Add("Property", typeof(string));
+                dataTable.Columns.Add("Value", typeof(string));
+                dataTable.Columns.Add("Status", typeof(string));
+
+                // Host Information section
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Computer Name", inventory.HostInfo.ComputerName, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "FQDN", inventory.HostInfo.FullyQualifiedDomainName, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Hyper-V Version", inventory.HostInfo.HyperVVersion, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Cluster Name", inventory.HostInfo.ClusterName, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Node State", inventory.HostInfo.NodeState, GetNodeStateStatus(inventory.HostInfo.NodeState));
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Logical Processors", inventory.HostInfo.LogicalProcessors.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Physical Processors", inventory.HostInfo.PhysicalProcessors.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Processor Sockets", inventory.HostInfo.ProcessorSockets.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Total Memory (GB)", inventory.HostInfo.TotalMemoryGB.ToString("F2"), "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "VHD Path", inventory.HostInfo.VirtualHardDiskPath, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "VM Path", inventory.HostInfo.VirtualMachinePath, "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "Enhanced Session Mode", inventory.HostInfo.EnableEnhancedSessionMode ? "Enabled" : "Disabled", "");
+                AddInventoryRow(dataTable, "🖥️ Host Information", "NUMA Spanning", inventory.HostInfo.NumaSpanningEnabled ? "Enabled" : "Disabled", "");
+
+                // Resource Allocation section
+                AddInventoryRow(dataTable, "📊 Resource Allocation", "Total VM Processors", inventory.ResourceAllocation.TotalVMProcessors.ToString(), "");
+                AddInventoryRow(dataTable, "📊 Resource Allocation", "Total VM Memory (MB)", inventory.ResourceAllocation.TotalVMMemoryMB.ToString("N0"), "");
+                AddInventoryRow(dataTable, "📊 Resource Allocation", "VM Startup Memory (MB)", inventory.ResourceAllocation.TotalVMStartupMemoryMB.ToString("N0"), "");
+                AddInventoryRow(dataTable, "📊 Resource Allocation", "CPU Overcommit Ratio", $"{inventory.ResourceAllocation.CPUOvercommitRatio:F2}:1", GetOvercommitStatus(inventory.ResourceAllocation.CPUOvercommitRatio, "cpu"));
+                AddInventoryRow(dataTable, "📊 Resource Allocation", "Memory Overcommit Ratio", $"{inventory.ResourceAllocation.MemoryOvercommitRatio:F2}:1", GetOvercommitStatus(inventory.ResourceAllocation.MemoryOvercommitRatio, "memory"));
+
+                // Performance Data section
+                if (inventory.PerformanceData.DataAvailable)
+                {
+                    AddInventoryRow(dataTable, "⚡ Performance", "CPU Usage %", $"{inventory.PerformanceData.CPUUsagePercent:F1}%", GetPerformanceStatus(inventory.PerformanceData.CPUUsagePercent, "cpu"));
+                    AddInventoryRow(dataTable, "⚡ Performance", "Available Memory (MB)", $"{inventory.PerformanceData.AvailableMemoryMB:F0}", "");
+                    AddInventoryRow(dataTable, "⚡ Performance", "Memory Usage %", $"{inventory.PerformanceData.MemoryUsagePercent:F1}%", GetPerformanceStatus(inventory.PerformanceData.MemoryUsagePercent, "memory"));
+                }
+                else
+                {
+                    AddInventoryRow(dataTable, "⚡ Performance", "Performance Data", "Not Available", "Warning");
+                }
+
+                // Workload Analysis section
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Total VMs", inventory.WorkloadAnalysis.TotalVMs.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Running VMs", inventory.WorkloadAnalysis.RunningVMs.ToString(), "Good");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Stopped VMs", inventory.WorkloadAnalysis.StoppedVMs.ToString(), inventory.WorkloadAnalysis.StoppedVMs > 0 ? "Info" : "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Paused VMs", inventory.WorkloadAnalysis.PausedVMs.ToString(), inventory.WorkloadAnalysis.PausedVMs > 0 ? "Warning" : "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Saved VMs", inventory.WorkloadAnalysis.SavedVMs.ToString(), inventory.WorkloadAnalysis.SavedVMs > 0 ? "Info" : "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Generation 1 VMs", inventory.WorkloadAnalysis.Generation1VMs.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Generation 2 VMs", inventory.WorkloadAnalysis.Generation2VMs.ToString(), "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "Replicated VMs", inventory.WorkloadAnalysis.ReplicatedVMs.ToString(), inventory.WorkloadAnalysis.ReplicatedVMs > 0 ? "Good" : "");
+                AddInventoryRow(dataTable, "🖥️ Workload Analysis", "VMs with Checkpoints", inventory.WorkloadAnalysis.CheckpointedVMs.ToString(), inventory.WorkloadAnalysis.CheckpointedVMs > 5 ? "Warning" : "");
+
+                // Storage Information section
+                foreach (var storage in inventory.StorageInfo)
+                {
+                    string driveStatus = storage.UsedPercent > 90 ? "Critical" : storage.UsedPercent > 75 ? "Warning" : "Good";
+                    AddInventoryRow(dataTable, "💾 Storage", $"Drive {storage.DriveLetter} - Total (GB)", storage.TotalGB.ToString("F2"), "");
+                    AddInventoryRow(dataTable, "💾 Storage", $"Drive {storage.DriveLetter} - Used (GB)", storage.UsedGB.ToString("F2"), "");
+                    AddInventoryRow(dataTable, "💾 Storage", $"Drive {storage.DriveLetter} - Free (GB)", storage.FreeGB.ToString("F2"), driveStatus);
+                    AddInventoryRow(dataTable, "💾 Storage", $"Drive {storage.DriveLetter} - Used %", $"{storage.UsedPercent:F1}%", driveStatus);
+                    AddInventoryRow(dataTable, "💾 Storage", $"Drive {storage.DriveLetter} - VM Files", storage.VMFileCount.ToString(), "");
+                }
+
+                // Network Information section
+                foreach (var network in inventory.NetworkInfo)
+                {
+                    string linkSpeedDisplay = network.LinkSpeed > 0 ? FormatLinkSpeed(network.LinkSpeed) : "Unknown";
+                    AddInventoryRow(dataTable, "🌐 Network", $"Adapter: {network.Name}", network.InterfaceDescription, "");
+                    AddInventoryRow(dataTable, "🌐 Network", $"{network.Name} - Virtual Switches", network.VirtualSwitches.ToString(), "");
+                }
+
+                // Idle Resources section
+                int idleVMCount = inventory.IdleResources.IdleVMNames.Count;
+                int unusedAdapterCount = inventory.IdleResources.UnusedNetworkAdapterNames.Count;
+
+                AddInventoryRow(dataTable, "💤 Idle Resources", "Idle VMs (>30 days off)", idleVMCount.ToString(), idleVMCount > 0 ? "Warning" : "Good");
+                if (idleVMCount > 0 && idleVMCount <= 10)
+                {
+                    AddInventoryRow(dataTable, "💤 Idle Resources", "Idle VM Names", string.Join(", ", inventory.IdleResources.IdleVMNames), "Info");
+                }
+                else if (idleVMCount > 10)
+                {
+                    AddInventoryRow(dataTable, "💤 Idle Resources", "Idle VM Names", string.Join(", ", inventory.IdleResources.IdleVMNames.Take(10)) + $"... (+{idleVMCount - 10} more)", "Warning");
+                }
+
+                AddInventoryRow(dataTable, "💤 Idle Resources", "Unused Network Adapters", unusedAdapterCount.ToString(), unusedAdapterCount > 0 ? "Info" : "Good");
+                if (unusedAdapterCount > 0)
+                {
+                    AddInventoryRow(dataTable, "💤 Idle Resources", "Unused Adapter Names", string.Join(", ", inventory.IdleResources.UnusedNetworkAdapterNames), "Info");
+                }
+
+                // Timestamp
+                AddInventoryRow(dataTable, "📅 Collection Info", "Data Collected At", inventory.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"), "");
+
+                // Bind to DataGridView
+                datagridviewHealthOverview.DataSource = dataTable;
+
+                // Configure DataGridView properties
+                datagridviewHealthOverview.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                datagridviewHealthOverview.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                datagridviewHealthOverview.MultiSelect = false;
+                datagridviewHealthOverview.ReadOnly = true;
+                datagridviewHealthOverview.AllowUserToAddRows = false;
+                datagridviewHealthOverview.AllowUserToDeleteRows = false;
+                datagridviewHealthOverview.RowHeadersVisible = false;
+                datagridviewHealthOverview.AllowUserToResizeRows = false;
+
+                // Set column widths
+                if (datagridviewHealthOverview.Columns.Contains("Category"))
+                    datagridviewHealthOverview.Columns["Category"].MinimumWidth = 150;
+                if (datagridviewHealthOverview.Columns.Contains("Property"))
+                    datagridviewHealthOverview.Columns["Property"].MinimumWidth = 200;
+                if (datagridviewHealthOverview.Columns.Contains("Value"))
+                    datagridviewHealthOverview.Columns["Value"].MinimumWidth = 250;
+                if (datagridviewHealthOverview.Columns.Contains("Status"))
+                    datagridviewHealthOverview.Columns["Status"].MinimumWidth = 80;
+
+                // Apply color coding based on Status column
+                ApplyHealthOverviewColorCoding();
+
+                Message($"datagridviewHealthOverview updated successfully",
+                    EventType.Information, 7113);
+            }
+            catch (Exception ex)
+            {
+                Message($"Error updating datagridviewHealthOverview: {ex.Message}",
+                    EventType.Error, 7114);
+            }
+        }
+
+        /// <summary>
+        /// Adds a row to the inventory DataTable
+        /// </summary>
+        private void AddInventoryRow(DataTable dataTable, string category, string property, string value, string status)
+        {
+            var row = dataTable.NewRow();
+            row["Category"] = category;
+            row["Property"] = property;
+            row["Value"] = value;
+            row["Status"] = status;
+            dataTable.Rows.Add(row);
+        }
+
+        /// <summary>
+        /// Gets the status indicator for node state
+        /// </summary>
+        private string GetNodeStateStatus(string nodeState)
+        {
+            return nodeState switch
+            {
+                "Up" or "Online" => "Good",
+                "Down" or "Offline" => "Critical",
+                "Paused" => "Warning",
+                "Standalone" => "Info",
+                _ => ""
+            };
+        }
+
+        /// <summary>
+        /// Gets the status indicator for overcommit ratios
+        /// </summary>
+        private string GetOvercommitStatus(double ratio, string type)
+        {
+            if (type == "cpu")
+            {
+                if (ratio > 8) return "Critical";
+                if (ratio > 4) return "Warning";
+                return "Good";
+            }
+            else // memory
+            {
+                if (ratio > 1.5) return "Critical";
+                if (ratio > 1.0) return "Warning";
+                return "Good";
+            }
+        }
+
+        /// <summary>
+        /// Gets the status indicator for performance metrics
+        /// </summary>
+        private string GetPerformanceStatus(double value, string type)
+        {
+            if (type == "cpu" || type == "memory")
+            {
+                if (value > 90) return "Critical";
+                if (value > 75) return "Warning";
+                return "Good";
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Formats link speed from bytes/sec to human-readable format
+        /// </summary>
+        private string FormatLinkSpeed(long linkSpeed)
+        {
+            if (linkSpeed >= 1_000_000_000_000)
+                return $"{linkSpeed / 1_000_000_000_000.0:F1} Tbps";
+            if (linkSpeed >= 1_000_000_000)
+                return $"{linkSpeed / 1_000_000_000.0:F1} Gbps";
+            if (linkSpeed >= 1_000_000)
+                return $"{linkSpeed / 1_000_000.0:F1} Mbps";
+            if (linkSpeed >= 1_000)
+                return $"{linkSpeed / 1_000.0:F1} Kbps";
+            return $"{linkSpeed} bps";
+        }
+
+        /// <summary>
+        /// Applies color coding to the health overview DataGridView based on status
+        /// </summary>
+        private void ApplyHealthOverviewColorCoding()
+        {
+            foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
+            {
+                var status = row.Cells["Status"]?.Value?.ToString();
+                var category = row.Cells["Category"]?.Value?.ToString();
+
+                // Apply row background color based on category for grouping effect
+                if (category?.Contains("Host Information") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.AliceBlue;
+                }
+                else if (category?.Contains("Resource Allocation") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.Honeydew;
+                }
+                else if (category?.Contains("Performance") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.LavenderBlush;
+                }
+                else if (category?.Contains("Workload") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.LightCyan;
+                }
+                else if (category?.Contains("Storage") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.Cornsilk;
+                }
+                else if (category?.Contains("Network") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.Lavender;
+                }
+                else if (category?.Contains("Idle") == true)
+                {
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                }
+
+                // Apply status cell color coding
+                if (!string.IsNullOrEmpty(status))
+                {
+                    switch (status)
+                    {
+                        case "Good":
+                            row.Cells["Status"].Style.BackColor = Color.LightGreen;
+                            row.Cells["Status"].Style.ForeColor = Color.DarkGreen;
+                            break;
+                        case "Warning":
+                            row.Cells["Status"].Style.BackColor = Color.LightYellow;
+                            row.Cells["Status"].Style.ForeColor = Color.DarkOrange;
+                            break;
+                        case "Critical":
+                            row.Cells["Status"].Style.BackColor = Color.LightCoral;
+                            row.Cells["Status"].Style.ForeColor = Color.DarkRed;
+                            break;
+                        case "Info":
+                            row.Cells["Status"].Style.BackColor = Color.LightBlue;
+                            row.Cells["Status"].Style.ForeColor = Color.DarkBlue;
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Displays a summary of the health overview data
+        /// </summary>
+        private void buttonSummaryHealthOverview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Message("User requested health overview summary",
+                    EventType.Information, 7120);
+
+                // Check if there's an active Hyper-V connection
+                if (!SessionContext.IsSessionActive())
+                {
+                    MessageBox.Show(@"No active Hyper-V connection. Please connect to a Hyper-V host first.",
+                        @"Connection Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                // Check if we have health data
+                if (datagridviewHealthOverview == null || datagridviewHealthOverview.Rows.Count == 0)
+                {
+                    MessageBox.Show(@"No health data available. Please load health overview first.",
+                        @"No Data",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                Cursor = Cursors.WaitCursor;
+
+                // Count status indicators
+                int goodCount = 0;
+                int warningCount = 0;
+                int criticalCount = 0;
+                int infoCount = 0;
+
+                foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
+                {
+                    var status = row.Cells["Status"]?.Value?.ToString();
+                    switch (status)
+                    {
+                        case "Good": goodCount++; break;
+                        case "Warning": warningCount++; break;
+                        case "Critical": criticalCount++; break;
+                        case "Info": infoCount++; break;
+                    }
+                }
+
+                // Get key metrics from the grid
+                string computerName = GetHealthGridValue("Computer Name");
+                string totalVMs = GetHealthGridValue("Total VMs");
+                string runningVMs = GetHealthGridValue("Running VMs");
+                string cpuOvercommit = GetHealthGridValue("CPU Overcommit Ratio");
+                string memoryOvercommit = GetHealthGridValue("Memory Overcommit Ratio");
+                string cpuUsage = GetHealthGridValue("CPU Usage %");
+                string memoryUsage = GetHealthGridValue("Memory Usage %");
+
+                Cursor = Cursors.Default;
+
+                // Determine overall health status
+                string overallHealth;
+                string healthEmoji;
+                if (criticalCount > 0)
+                {
+                    overallHealth = "CRITICAL";
+                    healthEmoji = "🔴";
+                }
+                else if (warningCount > 0)
+                {
+                    overallHealth = "WARNING";
+                    healthEmoji = "🟡";
+                }
+                else
+                {
+                    overallHealth = "HEALTHY";
+                    healthEmoji = "🟢";
+                }
+
+                string summaryText = $@"Host Health Summary - {computerName}
+
+{healthEmoji} Overall Status: {overallHealth}
+
+📊 Health Indicators:
+• Good: {goodCount}
+• Warning: {warningCount}
+• Critical: {criticalCount}
+• Info: {infoCount}
+
+🖥️ VM Status:
+• Total VMs: {totalVMs}
+• Running VMs: {runningVMs}
+
+📈 Resource Utilization:
+• CPU Overcommit: {cpuOvercommit}
+• Memory Overcommit: {memoryOvercommit}
+• Current CPU Usage: {cpuUsage}
+• Current Memory Usage: {memoryUsage}
+
+💡 Recommendations:
+{GetHealthRecommendations(criticalCount, warningCount, cpuOvercommit, memoryOvercommit)}";
+
+                Message($"Health summary generated - Status: {overallHealth}",
+                    EventType.Information, 7121);
+
+                MessageBox.Show(summaryText,
+                    @"Host Health Summary",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Cursor = Cursors.Default;
+
+                string errorMsg = $"Error generating health summary: {ex.Message}";
+                Message(errorMsg, EventType.Error, 7122);
+
+                MessageBox.Show(errorMsg,
+                    @"Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value from the health overview grid by property name
+        /// </summary>
+        private string GetHealthGridValue(string propertyName)
+        {
+            foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
+            {
+                var property = row.Cells["Property"]?.Value?.ToString();
+                if (property == propertyName)
+                {
+                    return row.Cells["Value"]?.Value?.ToString() ?? "N/A";
+                }
+            }
+            return "N/A";
+        }
+
+        /// <summary>
+        /// Generates health recommendations based on metrics
+        /// </summary>
+        private string GetHealthRecommendations(int criticalCount, int warningCount, string cpuOvercommit, string memoryOvercommit)
+        {
+            var recommendations = new List<string>();
+
+            if (criticalCount > 0)
+            {
+                recommendations.Add("• ⚠️ Critical issues detected - investigate immediately");
+            }
+
+            if (warningCount > 0)
+            {
+                recommendations.Add($"• ⚡ {warningCount} warning(s) detected - review and address");
+            }
+
+            // Parse overcommit ratios
+            if (double.TryParse(cpuOvercommit?.Replace(":1", ""), out double cpuRatio))
+            {
+                if (cpuRatio > 4)
+                {
+                    recommendations.Add($"• CPU overcommit ratio ({cpuRatio:F1}:1) is high - consider adding processors or reducing VM count");
+                }
+            }
+
+            if (double.TryParse(memoryOvercommit?.Replace(":1", ""), out double memRatio))
+            {
+                if (memRatio > 1.0)
+                {
+                    recommendations.Add($"• Memory overcommit ratio ({memRatio:F1}:1) exceeds 1:1 - monitor for memory pressure");
+                }
+            }
+
+            if (recommendations.Count == 0)
+            {
+                recommendations.Add("• ✅ Host appears healthy - no immediate actions required");
+            }
+
+            return string.Join("\n", recommendations);
         }
     }
 }

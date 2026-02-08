@@ -747,5 +747,70 @@ namespace HVTools.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Exports VM data and VM Groups to a CSV file
+        /// </summary>
+        /// <param name="filePath">The file path to export to</param>
+        /// <param name="vmGroups">The VM groups to export</param>
+        /// <param name="vmData">The VM data to export</param>
+        /// <param name="columnHeaders">List of column header texts</param>
+        /// <returns>True if export was successful, false otherwise</returns>
+        public static bool ExportVmGroupsToCsv(string filePath, List<VmGroupInfo> vmGroups,
+            List<Dictionary<string, string>> vmData, List<string> columnHeaders)
+        {
+            try
+            {
+                FileLogger.Message("Exporting as CSV format",
+                    FileLogger.EventType.Information, 2110);
+
+                var csv = new System.Text.StringBuilder();
+
+                // Write header
+                var headers = columnHeaders.Select(h => $"\"{h}\"").ToList();
+                csv.AppendLine(string.Join(",", headers));
+
+                // Write data rows
+                foreach (var vm in vmData)
+                {
+                    var values = new List<string>();
+                    foreach (var header in columnHeaders)
+                    {
+                        var cellValue = vm.ContainsKey(header) ? vm[header] : "";
+                        values.Add($"\"{cellValue.Replace("\"", "\"\"")}\"");
+                    }
+                    csv.AppendLine(string.Join(",", values));
+                }
+
+                File.WriteAllText(filePath, csv.ToString(), System.Text.Encoding.UTF8);
+
+                // Also create a separate CSV for VM Groups if available
+                if (vmGroups != null && vmGroups.Count > 0)
+                {
+                    string groupsCsvPath = filePath.Replace(".csv", "_VMGroups.csv");
+                    var groupsCsv = new System.Text.StringBuilder();
+
+                    groupsCsv.AppendLine("\"Group Name\",\"Group Type\",\"VM Count\",\"VM Members\",\"Computer Name\"");
+
+                    foreach (var group in vmGroups)
+                    {
+                        groupsCsv.AppendLine($"\"{group.Name}\",\"{group.GroupTypeDisplay}\",\"{group.VmCount}\",\"{group.VmList}\",\"{group.ComputerName}\"");
+                    }
+
+                    File.WriteAllText(groupsCsvPath, groupsCsv.ToString(), System.Text.Encoding.UTF8);
+
+                    FileLogger.Message($"VM Groups data also exported to: {groupsCsvPath}",
+                        FileLogger.EventType.Information, 2111);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Message($"Error exporting to CSV: {ex.Message}",
+                    FileLogger.EventType.Error, 2112);
+                return false;
+            }
+        }
     }
 }

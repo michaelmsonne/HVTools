@@ -2090,67 +2090,6 @@ namespace HVTools.Forms
             }
         }
 
-        private bool ExportVmGroupsToCsv(string filePath, List<VmGroupInfo> vmGroups)
-        {
-            try
-            {
-                Message("Exporting as CSV format",
-                    EventType.Information, 2110);
-
-                var vmData = GetVmDataFromGrid();
-                var csv = new System.Text.StringBuilder();
-
-                // Write header
-                var headers = new List<string>();
-                foreach (DataGridViewColumn column in datagridviewVMOverView.Columns)
-                {
-                    headers.Add($"\"{column.HeaderText}\"");
-                }
-                csv.AppendLine(string.Join(",", headers));
-
-                // Write data rows
-                foreach (DataGridViewRow row in datagridviewVMOverView.Rows)
-                {
-                    var values = new List<string>();
-                    foreach (DataGridViewColumn column in datagridviewVMOverView.Columns)
-                    {
-                        var cellValue = row.Cells[column.Index].Value?.ToString() ?? "";
-                        values.Add($"\"{cellValue.Replace("\"", "\"\"")}\"");
-                    }
-                    csv.AppendLine(string.Join(",", values));
-                }
-
-                File.WriteAllText(filePath, csv.ToString(), System.Text.Encoding.UTF8);
-
-                // Also create a separate CSV for VM Groups if available
-                if (vmGroups != null && vmGroups.Count > 0)
-                {
-                    string groupsCsvPath = filePath.Replace(".csv", "_VMGroups.csv");
-                    var groupsCsv = new System.Text.StringBuilder();
-
-                    groupsCsv.AppendLine("\"Group Name\",\"Group Type\",\"VM Count\",\"VM Members\",\"Computer Name\"");
-
-                    foreach (var group in vmGroups)
-                    {
-                        groupsCsv.AppendLine($"\"{group.Name}\",\"{group.GroupTypeDisplay}\",\"{group.VmCount}\",\"{group.VmList}\",\"{group.ComputerName}\"");
-                    }
-
-                    File.WriteAllText(groupsCsvPath, groupsCsv.ToString(), System.Text.Encoding.UTF8);
-
-                    Message($"VM Groups data also exported to: {groupsCsvPath}",
-                        EventType.Information, 2111);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Message($"Error exporting to CSV: {ex.Message}",
-                    EventType.Error, 2112);
-                return false;
-            }
-        }
-
         private bool ExportToXml(string filePath, List<VmGroupInfo> vmGroups)
         {
             try
@@ -4712,7 +4651,12 @@ Management:
                                     break;
 
                                 case ".csv":
-                                    success = ExportVmGroupsToCsv(filePath, vmGroups);
+                                    var columnHeaders = new List<string>();
+                                    foreach (DataGridViewColumn column in datagridviewVMOverView.Columns)
+                                    {
+                                        columnHeaders.Add(column.HeaderText);
+                                    }
+                                    success = VmGroups.ExportVmGroupsToCsv(filePath, vmGroups, GetVmDataFromGrid(), columnHeaders);
                                     break;
 
                                 case ".xml":

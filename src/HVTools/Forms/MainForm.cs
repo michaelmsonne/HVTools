@@ -1708,7 +1708,7 @@ namespace HVTools.Forms
                     return;
                 }
 
-                string selectedGroupName = datagridviewVMGroups.SelectedRows[0].Cells["Group Name"].Value?.ToString();
+                string? selectedGroupName = datagridviewVMGroups.SelectedRows[0].Cells["Group Name"].Value?.ToString();
 
                 if (string.IsNullOrEmpty(selectedGroupName))
                 {
@@ -1786,8 +1786,8 @@ namespace HVTools.Forms
                                 Message($"VM Group '{selectedGroupName}' force deleted successfully",
                                     EventType.Information, 2045);
 
-                                MessageBox.Show($"VM Group '{selectedGroupName}' force deleted successfully. " +
-                                              "The VMs remain but are no longer part of this group.",
+                                MessageBox.Show($@"VM Group '{selectedGroupName}' force deleted successfully. " +
+                                              @"The VMs remain but are no longer part of this group.",
                                     @"Success",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Information);
@@ -1871,7 +1871,7 @@ namespace HVTools.Forms
                     return;
                 }
 
-                string currentGroupName = datagridviewVMGroups.SelectedRows[0].Cells["Group Name"].Value?.ToString();
+                string? currentGroupName = datagridviewVMGroups.SelectedRows[0].Cells["Group Name"].Value?.ToString();
 
                 if (string.IsNullOrEmpty(currentGroupName))
                 {
@@ -1977,18 +1977,17 @@ namespace HVTools.Forms
                     EventType.Information, 2057);
 
                 // Get VM Groups
-                var vmGroups = VmGroups.GetHyperVvmGroups(cmd => ExecutePowerShellCommand(cmd));
 
-                if (vmGroups != null)
+                if (VmGroups.GetHyperVvmGroups(cmd => ExecutePowerShellCommand(cmd)) is { } vmGroups)
                 {
-                    Message($"Retrieved {vmGroups.Count} VM Groups, updating DataGridView",
+                    Message($"Retrieved '{vmGroups.Count}' VM Groups, updating DataGridView",
                         EventType.Information, 2058);
 
                     // Update DataGridView
                     UpdateVmGroupsDataGridView(vmGroups);
 
                     // Update status strip
-                    toolStripStatusLabelTextMainForm.Text = $"VM Groups refreshed successfully: {vmGroups.Count} group(s) loaded";
+                    toolStripStatusLabelTextMainForm.Text = $@"VM Groups refreshed successfully: '{vmGroups.Count}' group(s) loaded";
 
                     /*MessageBox.Show($"VM Groups refreshed successfully.\n\nFound {vmGroups.Count} group(s).",
                         "Refresh Complete",

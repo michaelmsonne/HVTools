@@ -17,7 +17,6 @@ namespace HVTools.Forms
         private bool _exitConfirmed;
 
         // Store current health inventory for node switching
-        private HostHealthInfo? _currentHealthInventory = null;
         private bool _isLoadingNodeData;
         private string? _currentlyDisplayedNodeName; // Track which node's data is displayed
 
@@ -6040,7 +6039,6 @@ Notes:
                         if (inventory != null)
                         {
                             // Store inventory for potential node switching
-                            _currentHealthInventory = inventory;
 
                             // Track which node's data we're displaying
                             _currentlyDisplayedNodeName = inventory.HostInfo.ComputerName;

@@ -495,15 +495,12 @@ namespace HVTools.Forms
                         progressForm = null!;
                     }
 
-                    if (taskException != null)
-                    {
-                        MessageBox.Show($@"Error during {operationName}:
+                    MessageBox.Show($@"Error during {operationName}:
 
 {taskException.Message}",
-                            @"Operation Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                        @"Operation Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
                 catch (Exception ex)
                 {
@@ -654,7 +651,7 @@ namespace HVTools.Forms
                 Message($"Loading VM overview from '{SessionContext.ServerName}' (IsCluster: {SessionContext.IsCluster}, IsLocal: {SessionContext.IsLocal})",
                     EventType.Information, 2170);
 
-                System.Collections.ObjectModel.Collection<PSObject> results;
+                Collection<PSObject> results;
 
                 // Check if connected to a cluster - use node iteration approach
                 if (SessionContext.IsCluster && !SessionContext.IsLocal)
@@ -698,7 +695,7 @@ namespace HVTools.Forms
         /// <summary>
         /// Updates the VM Overview DataGridView with PowerShell results
         /// </summary>
-        private void UpdateVmOverviewDataGridView(System.Collections.ObjectModel.Collection<PSObject> results)
+        private void UpdateVmOverviewDataGridView(Collection<PSObject> results)
         {
             try
             {
@@ -999,9 +996,9 @@ namespace HVTools.Forms
         /// Gets VMs from all cluster nodes by iterating through each node
         /// Retrieves detailed VM properties at collection time to avoid cross-node issues
         /// </summary>
-        private System.Collections.ObjectModel.Collection<PSObject> GetClusterVMs()
+        private Collection<PSObject> GetClusterVMs()
         {
-            var allVMs = new System.Collections.ObjectModel.Collection<PSObject>();
+            var allVMs = new Collection<PSObject>();
 
             try
             {
@@ -1026,7 +1023,7 @@ namespace HVTools.Forms
                 var clusterNodes = new List<string>();
                 foreach (var nodeObj in nodesResult)
                 {
-                    string nodeName = nodeObj.BaseObject?.ToString();
+                    string nodeName = nodeObj.BaseObject?.ToString()!;
                     if (!string.IsNullOrEmpty(nodeName))
                     {
                         // If the original connection used FQDN, construct FQDNs for cluster nodes
@@ -1172,7 +1169,7 @@ namespace HVTools.Forms
         /// <summary>
         /// Executes a PowerShell command directly on a specific cluster node
         /// </summary>
-        private System.Collections.ObjectModel.Collection<PSObject> ExecutePowerShellCommandOnNode(string nodeName, string command)
+        private Collection<PSObject> ExecutePowerShellCommandOnNode(string nodeName, string command)
         {
             try
             {
@@ -1265,7 +1262,7 @@ namespace HVTools.Forms
                                         actualErrors.Select(e => e.Exception.Message));
                                     Message($"PowerShell command errors: {errors}",
                                         EventType.Error, 2007);
-                                    return null;
+                                    return null!;
                                 }
                             }
 
@@ -1280,7 +1277,7 @@ namespace HVTools.Forms
                     {
                         Message("Persistent runspace is not available or not opened",
                             EventType.Error, 2011);
-                        return null;
+                        return null!;
                     }
 
                     using (PowerShell ps = PowerShell.Create())
@@ -1309,7 +1306,7 @@ namespace HVTools.Forms
                                     actualErrors.Select(e => e.Exception.Message));
                                 Message($"PowerShell command errors: {errors}",
                                     EventType.Error, 2007);
-                                return null;
+                                return null!;
                             }
                         }
 
@@ -1321,7 +1318,7 @@ namespace HVTools.Forms
             {
                 Message($"Error executing PowerShell command '{command}': {ex.Message}",
                     EventType.Error, 2008);
-                return null;
+                return null!;
             }
         }
 
@@ -2493,7 +2490,7 @@ namespace HVTools.Forms
                     Message("Retrieving VM data from server...",
                         EventType.Information, 2152);
 
-                    System.Collections.ObjectModel.Collection<PSObject> results;
+                    Collection<PSObject> results;
 
                     // Always use GetClusterVMs for data collection (it works for standalone too)
                     // This ensures all PowerShell work is done in the background
@@ -2582,7 +2579,7 @@ namespace HVTools.Forms
         /// Gets detailed VM information for standalone/local hosts
         /// Collects all properties in one pass to avoid multiple PowerShell calls later
         /// </summary>
-        private System.Collections.ObjectModel.Collection<PSObject> GetDetailedVMsForStandalone()
+        private Collection<PSObject> GetDetailedVMsForStandalone()
         {
             try
             {
@@ -4843,7 +4840,7 @@ Would you like to open the file location?",
                     }
                 ";
 
-                System.Collections.ObjectModel.Collection<PSObject> results;
+                Collection<PSObject> results;
 
                 if (SessionContext.IsCluster && !SessionContext.IsLocal)
                 {
@@ -4865,7 +4862,7 @@ Would you like to open the file location?",
                     }
                     else
                     {
-                        var allCheckpoints = new System.Collections.ObjectModel.Collection<PSObject>();
+                        var allCheckpoints = new Collection<PSObject>();
 
                         // Build list of cluster nodes
                         var clusterNodes = new List<string>();

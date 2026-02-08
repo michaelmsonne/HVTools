@@ -2109,145 +2109,6 @@ namespace HVTools.Forms
             }
         }
 
-        private bool ExportToXml(string filePath, List<VmGroupInfo> vmGroups)
-        {
-            try
-            {
-                Message("Exporting as XML format",
-                    EventType.Information, 2113);
-
-                var vmData = GetVmDataFromGrid();
-
-                using (var writer = System.Xml.XmlWriter.Create(filePath, new System.Xml.XmlWriterSettings
-                {
-                    Indent = true,
-                    Encoding = System.Text.Encoding.UTF8
-                }))
-                {
-                    writer.WriteStartDocument();
-                    writer.WriteStartElement("HyperVExport");
-
-                    // Export Info
-                    writer.WriteStartElement("ExportInfo");
-                    writer.WriteElementString("ExportDateTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    writer.WriteElementString("ExportedBy", Environment.UserName);
-                    writer.WriteElementString("HyperVHost", SessionContext.ServerName);
-                    writer.WriteElementString("ConnectionType", SessionContext.IsLocal ? "Local" : "Remote");
-                    writer.WriteElementString("TotalVMs", datagridviewVMOverView.Rows.Count.ToString());
-                    writer.WriteEndElement();
-
-                    // VM Data
-                    writer.WriteStartElement("VMData");
-                    foreach (var vm in vmData)
-                    {
-                        writer.WriteStartElement("VM");
-                        foreach (var kvp in vm)
-                        {
-                            writer.WriteElementString(kvp.Key.Replace(" ", ""), kvp.Value);
-                        }
-                        writer.WriteEndElement();
-                    }
-                    writer.WriteEndElement();
-
-                    // VM Groups
-                    if (vmGroups != null && vmGroups.Count > 0)
-                    {
-                        writer.WriteStartElement("VMGroups");
-                        foreach (var group in vmGroups)
-                        {
-                            writer.WriteStartElement("VMGroup");
-                            writer.WriteElementString("Name", group.Name);
-                            writer.WriteElementString("GroupType", group.GroupTypeDisplay);
-                            writer.WriteElementString("VMCount", group.VmCount.ToString());
-                            writer.WriteElementString("VMMembers", group.VmList);
-                            writer.WriteEndElement();
-                        }
-                        writer.WriteEndElement();
-                    }
-
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Message($"Error exporting to XML: {ex.Message}",
-                    EventType.Error, 2114);
-                return false;
-            }
-        }
-
-        private bool ExportToText(string filePath, List<VmGroupInfo> vmGroups)
-        {
-            try
-            {
-                Message("Exporting as formatted text",
-                    EventType.Information, 2115);
-
-                var vmData = GetVmDataFromGrid();
-                var textOutput = new List<string>();
-
-                textOutput.Add(new string('=', 80));
-                textOutput.Add("HVTools - ALL VM DATA EXPORT");
-                textOutput.Add(new string('=', 80));
-                textOutput.Add($"Export Date/Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                textOutput.Add($"Exported By: {Environment.UserName}");
-                textOutput.Add($"Hyper-V Host: {SessionContext.ServerName}");
-                textOutput.Add($"Connection Type: {(SessionContext.IsLocal ? "Local" : "Remote")}");
-                textOutput.Add($"Total VMs: {datagridviewVMOverView.Rows.Count}");
-                textOutput.Add("");
-
-                // VM Data
-                textOutput.Add("VIRTUAL MACHINES DATA");
-                textOutput.Add(new string('-', 80));
-
-                foreach (var vm in vmData)
-                {
-                    textOutput.Add("");
-                    foreach (var kvp in vm)
-                    {
-                        if (!string.IsNullOrEmpty(kvp.Value))
-                            textOutput.Add($"  {kvp.Key}: {kvp.Value}");
-                    }
-                }
-
-                // VM Groups Data
-                if (vmGroups != null && vmGroups.Count > 0)
-                {
-                    textOutput.Add("");
-                    textOutput.Add("");
-                    textOutput.Add("VM GROUPS DATA");
-                    textOutput.Add(new string('-', 80));
-
-                    foreach (var group in vmGroups)
-                    {
-                        textOutput.Add("");
-                        textOutput.Add($"Group Name: {group.Name}");
-                        textOutput.Add($"  Type: {group.GroupTypeDisplay}");
-                        textOutput.Add($"  VM Count: {group.VmCount}");
-                        textOutput.Add($"  VM Members: {group.VmList}");
-                    }
-                }
-
-                textOutput.Add("");
-                textOutput.Add(new string('=', 80));
-                textOutput.Add("END OF EXPORT");
-                textOutput.Add(new string('=', 80));
-
-                File.WriteAllLines(filePath, textOutput, System.Text.Encoding.UTF8);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Message($"Error exporting to text: {ex.Message}",
-                    EventType.Error, 2116);
-                return false;
-            }
-        }
-
         private List<Dictionary<string, string>> GetVmDataFromGrid()
         {
             var vmData = new List<Dictionary<string, string>>();
@@ -4560,12 +4421,12 @@ Management:
                                     success = VmGroups.ExportVmGroupsToCsv(filePath, vmGroups, GetVmDataFromGrid(), columnHeaders);
                                     break;
 
-                                case ".xml":
-                                    success = ExportToXml(filePath, vmGroups);
+                            case ".xml":
+                                    success = VmGroups.ExportVmGroupsToXml(filePath, vmGroups, GetVmDataFromGrid(), datagridviewVMOverView.Rows.Count);
                                     break;
 
                                 case ".txt":
-                                    success = ExportToText(filePath, vmGroups);
+                                    success = VmGroups.ExportVmGroupsToText(filePath, vmGroups, GetVmDataFromGrid(), datagridviewVMOverView.Rows.Count);
                                     break;
 
                                 default:

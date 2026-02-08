@@ -799,7 +799,7 @@ namespace HVTools.Helpers
 
                     File.WriteAllText(groupsCsvPath, groupsCsv.ToString(), System.Text.Encoding.UTF8);
 
-                    FileLogger.Message($"VM Groups data also exported to: {groupsCsvPath}",
+                FileLogger.Message($"VM Groups data also exported to: {groupsCsvPath}",
                         FileLogger.EventType.Information, 2111);
                 }
 
@@ -811,6 +811,198 @@ namespace HVTools.Helpers
                     FileLogger.EventType.Error, 2112);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Exports VM data and VM Groups to an XML file
+        /// </summary>
+        /// <param name="filePath">The file path to export to</param>
+        /// <param name="vmGroups">The VM groups to export</param>
+        /// <param name="vmData">The VM data to export</param>
+        /// <param name="vmCount">Total VM count</param>
+        /// <returns>True if export was successful, false otherwise</returns>
+        public static bool ExportVmGroupsToXml(string filePath, List<VmGroupInfo> vmGroups,
+            List<Dictionary<string, string>> vmData, int vmCount)
+        {
+            try
+            {
+                FileLogger.Message("Exporting as XML format",
+                    FileLogger.EventType.Information, 2113);
+
+                using (var writer = System.Xml.XmlWriter.Create(filePath, new System.Xml.XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = System.Text.Encoding.UTF8
+                }))
+                {
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("HyperVExport");
+
+                    // Export Info
+                    writer.WriteStartElement("ExportInfo");
+                    writer.WriteElementString("ExportDateTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    writer.WriteElementString("ExportedBy", Environment.UserName);
+                    writer.WriteElementString("HyperVHost", SessionContext.ServerName);
+                    writer.WriteElementString("ConnectionType", SessionContext.IsLocal ? "Local" : "Remote");
+                    writer.WriteElementString("TotalVMs", vmCount.ToString());
+                    writer.WriteEndElement();
+
+                    // VM Data
+                    writer.WriteStartElement("VMData");
+                    foreach (var vm in vmData)
+                    {
+                        writer.WriteStartElement("VM");
+                        foreach (var kvp in vm)
+                        {
+                            // Sanitize element name: remove spaces and invalid XML name characters
+                            string elementName = SanitizeXmlElementName(kvp.Key);
+                            writer.WriteElementString(elementName, kvp.Value);
+                        }
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
+
+                    // VM Groups
+                    if (vmGroups != null && vmGroups.Count > 0)
+                    {
+                        writer.WriteStartElement("VMGroups");
+                        foreach (var group in vmGroups)
+                        {
+                            writer.WriteStartElement("VMGroup");
+                            writer.WriteElementString("Name", group.Name);
+                            writer.WriteElementString("GroupType", group.GroupTypeDisplay);
+                            writer.WriteElementString("VMCount", group.VmCount.ToString());
+                            writer.WriteElementString("VMMembers", group.VmList);
+                            writer.WriteEndElement();
+                        }
+                        writer.WriteEndElement();
+                    }
+
+                    writer.WriteEndElement();
+                    writer.WriteEndDocument();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Message($"Error exporting to XML: {ex.Message}",
+                    FileLogger.EventType.Error, 2114);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Exports VM data and VM Groups to a formatted text file
+        /// </summary>
+        /// <param name="filePath">The file path to export to</param>
+        /// <param name="vmGroups">The VM groups to export</param>
+        /// <param name="vmData">The VM data to export</param>
+        /// <param name="vmCount">Total VM count</param>
+        /// <returns>True if export was successful, false otherwise</returns>
+        public static bool ExportVmGroupsToText(string filePath, List<VmGroupInfo> vmGroups,
+            List<Dictionary<string, string>> vmData, int vmCount)
+        {
+            try
+            {
+                FileLogger.Message("Exporting as formatted text",
+                    FileLogger.EventType.Information, 2115);
+
+                var textOutput = new List<string>();
+
+                textOutput.Add(new string('=', 80));
+                textOutput.Add("HVTools - ALL VM DATA EXPORT");
+                textOutput.Add(new string('=', 80));
+                textOutput.Add($"Export Date/Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                textOutput.Add($"Exported By: {Environment.UserName}");
+                textOutput.Add($"Hyper-V Host: {SessionContext.ServerName}");
+                textOutput.Add($"Connection Type: {(SessionContext.IsLocal ? "Local" : "Remote")}");
+                textOutput.Add($"Total VMs: {vmCount}");
+                textOutput.Add("");
+
+                // VM Data
+                textOutput.Add("VIRTUAL MACHINES DATA");
+                textOutput.Add(new string('-', 80));
+
+                foreach (var vm in vmData)
+                {
+                    textOutput.Add("");
+                    foreach (var kvp in vm)
+                    {
+                        if (!string.IsNullOrEmpty(kvp.Value))
+                            textOutput.Add($"  {kvp.Key}: {kvp.Value}");
+                    }
+                }
+
+                // VM Groups Data
+                if (vmGroups != null && vmGroups.Count > 0)
+                {
+                    textOutput.Add("");
+                    textOutput.Add("");
+                    textOutput.Add("VM GROUPS DATA");
+                    textOutput.Add(new string('-', 80));
+
+                    foreach (var group in vmGroups)
+                    {
+                        textOutput.Add("");
+                        textOutput.Add($"Group Name: {group.Name}");
+                        textOutput.Add($"  Type: {group.GroupTypeDisplay}");
+                        textOutput.Add($"  VM Count: {group.VmCount}");
+                        textOutput.Add($"  VM Members: {group.VmList}");
+                    }
+                }
+
+                textOutput.Add("");
+                textOutput.Add(new string('=', 80));
+                textOutput.Add("END OF EXPORT");
+                textOutput.Add(new string('=', 80));
+
+                File.WriteAllLines(filePath, textOutput, System.Text.Encoding.UTF8);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Message($"Error exporting to text: {ex.Message}",
+                    FileLogger.EventType.Error, 2116);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Sanitizes a string to be used as a valid XML element name.
+        /// Removes spaces, percent signs, parentheses, and other invalid characters.
+        /// </summary>
+        /// <param name="name">The original element name</param>
+        /// <returns>A sanitized element name valid for XML</returns>
+        private static string SanitizeXmlElementName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return "Element";
+
+            // Remove or replace invalid XML name characters
+            var sanitized = new System.Text.StringBuilder();
+
+            foreach (char c in name)
+            {
+                // Valid XML name characters: letters, digits, hyphens, underscores, periods
+                // First character must be a letter or underscore
+                if (char.IsLetterOrDigit(c) || c == '_' || c == '-' || c == '.')
+                {
+                    sanitized.Append(c);
+                }
+                // Skip spaces, %, (, ), and other invalid characters
+            }
+
+            string result = sanitized.ToString();
+
+            // Ensure the name starts with a letter or underscore (XML requirement)
+            if (result.Length > 0 && !char.IsLetter(result[0]) && result[0] != '_')
+            {
+                result = "_" + result;
+            }
+
+            return string.IsNullOrEmpty(result) ? "Element" : result;
         }
     }
 }

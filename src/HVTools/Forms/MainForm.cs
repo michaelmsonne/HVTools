@@ -2090,50 +2090,6 @@ namespace HVTools.Forms
             }
         }
 
-        private void allVMDataToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private bool ExportToJson(string filePath, List<VmGroupInfo> vmGroups)
-        {
-            try
-            {
-                Message("Exporting as JSON format",
-                    EventType.Information, 2108);
-
-                var exportData = new
-                {
-                    ExportInfo = new
-                    {
-                        ExportDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        ExportedBy = Environment.UserName,
-                        HyperVHost = SessionContext.ServerName,
-                        ConnectionType = SessionContext.IsLocal ? "Local" : "Remote",
-                        TotalVMs = datagridviewVMOverView.Rows.Count,
-                        ApplicationVersion = "HVTools v1.0.0.0"
-                    },
-                    VMData = GetVmDataFromGrid(),
-                    VMGroups = vmGroups
-                };
-
-                string jsonData = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-
-                File.WriteAllText(filePath, jsonData, System.Text.Encoding.UTF8);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Message($"Error exporting to JSON: {ex.Message}",
-                    EventType.Error, 2109);
-                return false;
-            }
-        }
-
         private bool ExportToCsv(string filePath, List<VmGroupInfo> vmGroups)
         {
             try
@@ -4752,7 +4708,7 @@ Management:
                             switch (fileExtension)
                             {
                                 case ".json":
-                                    success = ExportToJson(filePath, vmGroups);
+                                    success = VmGroups.ExportVmGroupsToJson(filePath, vmGroups, GetVmDataFromGrid(), datagridviewVMOverView.Rows.Count);
                                     break;
 
                                 case ".csv":
@@ -4768,7 +4724,7 @@ Management:
                                     break;
 
                                 default:
-                                    success = ExportToJson(filePath, vmGroups);
+                                    success = VmGroups.ExportVmGroupsToJson(filePath, vmGroups, GetVmDataFromGrid(), datagridviewVMOverView.Rows.Count);
                                     break;
                             }
 

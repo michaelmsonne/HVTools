@@ -699,5 +699,53 @@ namespace HVTools.Helpers
                 return "";
             }
         }
+
+        /// <summary>
+        /// Exports VM data and VM Groups to a JSON file
+        /// </summary>
+        /// <param name="filePath">The file path to export to</param>
+        /// <param name="vmGroups">The VM groups to export</param>
+        /// <param name="vmData">The VM data to export</param>
+        /// <param name="vmCount">Total VM count</param>
+        /// <returns>True if export was successful, false otherwise</returns>
+        public static bool ExportVmGroupsToJson(string filePath, List<VmGroupInfo> vmGroups,
+            List<Dictionary<string, string>> vmData, int vmCount)
+        {
+            try
+            {
+                FileLogger.Message("Exporting as JSON format",
+                    FileLogger.EventType.Information, 2108);
+
+                var exportData = new
+                {
+                    ExportInfo = new
+                    {
+                        ExportDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        ExportedBy = Environment.UserName,
+                        HyperVHost = SessionContext.ServerName,
+                        ConnectionType = SessionContext.IsLocal ? "Local" : "Remote",
+                        TotalVMs = vmCount,
+                        ApplicationVersion = Globals.ToolName.FullName + " " + Globals.ToolProperties.ToolVersion
+                    },
+                    VMData = vmData,
+                    VMGroups = vmGroups
+                };
+
+                string jsonData = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                File.WriteAllText(filePath, jsonData, System.Text.Encoding.UTF8);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.Message($"Error exporting to JSON: {ex.Message}",
+                    FileLogger.EventType.Error, 2109);
+                return false;
+            }
+        }
     }
 }

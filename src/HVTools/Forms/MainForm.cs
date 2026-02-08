@@ -3955,7 +3955,7 @@ Management:
                     // Handle result on UI thread
                     try
                     {
-                        if (diskDetails != null && diskDetails.Count > 0)
+                        if (diskDetails.Count > 0)
                         {
                             Message($"Retrieved {diskDetails.Count} virtual disk(s), updating DataGridView",
                                 EventType.Information, 5032);
@@ -4423,7 +4423,7 @@ Management:
                             var vmGroups = VmGroups.GetHyperVvmGroups(cmd => ExecutePowerShellCommand(cmd));
 
                             // Export based on file extension
-                            bool success = false;
+                            bool success;
                             switch (fileExtension)
                             {
                                 case ".json":
@@ -4547,7 +4547,7 @@ Would you like to open the file location?",
 
                         foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
                         {
-                            var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                            var type = row.Cells["Checkpoint Type"].Value?.ToString();
                             if (type == "Standard")
                                 standardCheckpoints++;
                             else if (type == "Production")
@@ -4616,7 +4616,7 @@ Would you like to open the file location?",
                 foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
                 {
                     // VM tracking
-                    var vmName = row.Cells["VM Name"]?.Value?.ToString();
+                    var vmName = row.Cells["VM Name"].Value?.ToString();
                     if (!string.IsNullOrEmpty(vmName))
                     {
                         uniqueVMs.Add(vmName);
@@ -4627,19 +4627,19 @@ Would you like to open the file location?",
                     }
 
                     // Checkpoint type
-                    var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                    var type = row.Cells["Checkpoint Type"].Value?.ToString();
                     if (type == "Standard")
                         standardCheckpoints++;
                     else if (type == "Production")
                         productionCheckpoints++;
 
                     // Size (stored as decimal string like "50.25")
-                    var sizeStr = row.Cells["Size (MB)"]?.Value?.ToString();
+                    var sizeStr = row.Cells["Size (MB)"].Value?.ToString();
                     if (!string.IsNullOrEmpty(sizeStr) && double.TryParse(sizeStr, out double sizeMb))
                         totalSizeMb += sizeMb;
 
                     // Dates
-                    var createdStr = row.Cells["Created"]?.Value?.ToString();
+                    var createdStr = row.Cells["Created"].Value?.ToString();
                     if (!string.IsNullOrEmpty(createdStr) && DateTime.TryParse(createdStr, out DateTime created))
                     {
                         if (created < oldestCheckpoint)
@@ -4674,7 +4674,7 @@ Would you like to open the file location?",
 
 💾 Storage Usage:
 • Total Size: {Math.Round(totalSizeMb / 1024.0, 2):N2} GB ({totalSizeMb:N0} MB)
-• Average per Checkpoint: {(totalCheckpoints > 0 ? Math.Round(totalSizeMb / (double)totalCheckpoints, 2) : 0):N2} MB
+• Average per Checkpoint: {(totalCheckpoints > 0 ? Math.Round(totalSizeMb / totalCheckpoints, 2) : 0):N2} MB
 
 📅 Age Information:
 • Oldest Checkpoint: {(oldestCheckpoint != DateTime.MaxValue ? oldestCheckpoint.ToString("yyyy-MM-dd HH:mm") : "N/A")}
@@ -4849,7 +4849,7 @@ Would you like to open the file location?",
 
                     var nodesResult = ExecutePowerShellCommand(getNodesScript);
 
-                    if (nodesResult == null || nodesResult.Count == 0)
+                    if (nodesResult.Count == 0)
                     {
                         Message("No cluster nodes found, falling back to standard checkpoint retrieval",
                             EventType.Warning, 6070);
@@ -4863,11 +4863,11 @@ Would you like to open the file location?",
                         var clusterNodes = new List<string>();
                         foreach (var nodeObj in nodesResult)
                         {
-                            string nodeName = nodeObj.BaseObject?.ToString();
+                            string? nodeName = nodeObj.BaseObject?.ToString();
                             if (!string.IsNullOrEmpty(nodeName))
                             {
                                 // If the original connection used FQDN, construct FQDNs for cluster nodes
-                                if (SessionContext.ServerName.Contains('.') && !nodeName.Contains('.'))
+                                if (SessionContext.ServerName!.Contains('.') && !nodeName.Contains('.'))
                                 {
                                     string domain = SessionContext.ServerName.Substring(SessionContext.ServerName.IndexOf('.'));
                                     nodeName = nodeName + domain;
@@ -4891,7 +4891,7 @@ Would you like to open the file location?",
 
                                 var nodeCheckpoints = ExecutePowerShellCommandOnNode(node, getCheckpointsScript);
 
-                                if (nodeCheckpoints != null && nodeCheckpoints.Count > 0)
+                                if (nodeCheckpoints.Count > 0)
                                 {
                                     foreach (var checkpoint in nodeCheckpoints)
                                     {
@@ -4926,7 +4926,7 @@ Would you like to open the file location?",
                     results = ExecutePowerShellCommand(getCheckpointsScript);
                 }
 
-                if (results == null || results.Count == 0)
+                if (results.Count == 0)
                 {
                     MessageBox.Show(@"No VM checkpoints found.",
                         @"Information",
@@ -5160,7 +5160,7 @@ Would you like to open the file location?",
                 foreach (DataGridViewRow row in datagridviewCheckpointOverView.Rows)
                 {
                     // Color code checkpoint type
-                    var type = row.Cells["Checkpoint Type"]?.Value?.ToString();
+                    var type = row.Cells["Checkpoint Type"].Value?.ToString();
                     if (type == "Standard")
                     {
                         row.Cells["Checkpoint Type"].Style.BackColor = Color.LightBlue;
@@ -5171,7 +5171,7 @@ Would you like to open the file location?",
                     }
 
                     // Color code automatic checkpoints
-                    var isAutomatic = row.Cells["Is Automatic"]?.Value?.ToString();
+                    var isAutomatic = row.Cells["Is Automatic"].Value?.ToString();
                     if (isAutomatic == "Yes")
                     {
                         row.Cells["Is Automatic"].Style.BackColor = Color.LightYellow;
@@ -5184,7 +5184,7 @@ Would you like to open the file location?",
                     }
 
                     // Color code age - highlight old checkpoints
-                    var ageStr = row.Cells["Age (Days)"]?.Value?.ToString();
+                    var ageStr = row.Cells["Age (Days)"].Value?.ToString();
                     if (!string.IsNullOrEmpty(ageStr) && double.TryParse(ageStr, out double age))
                     {
                         if (age > 90)
@@ -5200,7 +5200,7 @@ Would you like to open the file location?",
                     }
 
                     // Color code VM state
-                    var state = row.Cells["VM State"]?.Value?.ToString();
+                    var state = row.Cells["VM State"].Value?.ToString();
                     if (state == "Running")
                     {
                         row.Cells["VM State"].Style.BackColor = Color.LightGreen;
@@ -5211,7 +5211,7 @@ Would you like to open the file location?",
                     }
 
                     // Color code checkpoint state
-                    var checkpointState = row.Cells["State"]?.Value?.ToString();
+                    var checkpointState = row.Cells["State"].Value?.ToString();
                     if (checkpointState == "Off")
                     {
                         row.Cells["State"].Style.BackColor = Color.LightGray;
@@ -5222,7 +5222,7 @@ Would you like to open the file location?",
                     }
 
                     // Color code VM Generation
-                    var generation = row.Cells["VM Generation"]?.Value?.ToString();
+                    var generation = row.Cells["VM Generation"].Value?.ToString();
                     if (generation == "1")
                     {
                         row.Cells["VM Generation"].Style.BackColor = Color.LightBlue;
@@ -5233,14 +5233,14 @@ Would you like to open the file location?",
                     }
 
                     // Color code Dynamic Memory
-                    var dynamicMemory = row.Cells["Dynamic Memory"]?.Value?.ToString();
+                    var dynamicMemory = row.Cells["Dynamic Memory"].Value?.ToString();
                     if (dynamicMemory == "Yes")
                     {
                         row.Cells["Dynamic Memory"].Style.BackColor = Color.LightBlue;
                     }
 
                     // Color code Is Deleted
-                    var isDeleted = row.Cells["Is Deleted"]?.Value?.ToString();
+                    var isDeleted = row.Cells["Is Deleted"].Value?.ToString();
                     if (isDeleted == "Yes")
                     {
                         row.Cells["Is Deleted"].Style.BackColor = Color.LightCoral;
@@ -5279,9 +5279,9 @@ Would you like to open the file location?",
                 }
 
                 var selectedRow = datagridviewCheckpointOverView.SelectedRows[0];
-                string vmName = selectedRow.Cells["VM Name"]?.Value?.ToString();
-                string checkpointName = selectedRow.Cells["Checkpoint Name"]?.Value?.ToString();
-                string checkpointType = selectedRow.Cells["Checkpoint Type"]?.Value?.ToString();
+                string? vmName = selectedRow.Cells["VM Name"].Value?.ToString();
+                string? checkpointName = selectedRow.Cells["Checkpoint Name"].Value?.ToString();
+                string? checkpointType = selectedRow.Cells["Checkpoint Type"].Value?.ToString();
 
                 if (string.IsNullOrEmpty(vmName) || string.IsNullOrEmpty(checkpointName))
                 {
@@ -5325,9 +5325,7 @@ This action cannot be undone!",
                 Message($"Deleting checkpoint '{checkpointName}' on VM '{vmName}'...",
                     EventType.Information, 6065);
 
-                var result = ExecutePowerShellCommand(deleteScript);
-
-                if (result != null)
+                if (ExecutePowerShellCommand(deleteScript) is { } result)
                 {
                     Message($"Checkpoint '{checkpointName}' deleted successfully",
                         EventType.Information, 6066);
@@ -5390,57 +5388,57 @@ Note: The checkpoint files will be merged in the background, which may take some
                 string details = $@"Checkpoint Details
 
 VM Information:
-• VM Name: {selectedRow.Cells["VM Name"]?.Value}
-• VM State: {selectedRow.Cells["VM State"]?.Value}
-• VM Generation: {selectedRow.Cells["VM Generation"]?.Value}
-• VM ID: {selectedRow.Cells["VM ID"]?.Value}
+• VM Name: {selectedRow.Cells["VM Name"].Value}
+• VM State: {selectedRow.Cells["VM State"].Value}
+• VM Generation: {selectedRow.Cells["VM Generation"].Value}
+• VM ID: {selectedRow.Cells["VM ID"].Value}
 
 Checkpoint Information:
-• Name: {selectedRow.Cells["Checkpoint Name"]?.Value}
-• Type: {selectedRow.Cells["Checkpoint Type"]?.Value}
-• State: {selectedRow.Cells["State"]?.Value}
-• Is Automatic: {selectedRow.Cells["Is Automatic"]?.Value}
-• Version: {selectedRow.Cells["Version"]?.Value}
-• Created: {selectedRow.Cells["Created"]?.Value}
-• Age: {selectedRow.Cells["Age (Days)"]?.Value} days
+• Name: {selectedRow.Cells["Checkpoint Name"].Value}
+• Type: {selectedRow.Cells["Checkpoint Type"].Value}
+• State: {selectedRow.Cells["State"].Value}
+• Is Automatic: {selectedRow.Cells["Is Automatic"].Value}
+• Version: {selectedRow.Cells["Version"].Value}
+• Created: {selectedRow.Cells["Created"].Value}
+• Age: {selectedRow.Cells["Age (Days)"].Value} days
 
 Size Information:
-• Total Size: {selectedRow.Cells["Size (MB)"]?.Value} MB
-• System Files: {selectedRow.Cells["System Files (MB)"]?.Value} MB
+• Total Size: {selectedRow.Cells["Size (MB)"].Value} MB
+• System Files: {selectedRow.Cells["System Files (MB)"].Value} MB
 
 VM Configuration at Checkpoint Time:
-• Processor Count: {selectedRow.Cells["Processor Count"]?.Value}
-• Memory Startup: {selectedRow.Cells["Memory Startup (MB)"]?.Value} MB
-• Memory Minimum: {selectedRow.Cells["Memory Minimum (MB)"]?.Value} MB
-• Memory Maximum: {selectedRow.Cells["Memory Maximum (MB)"]?.Value} MB
+• Processor Count: {selectedRow.Cells["Processor Count"].Value}
+• Memory Startup: {selectedRow.Cells["Memory Startup (MB)"].Value} MB
+• Memory Minimum: {selectedRow.Cells["Memory Minimum (MB)"].Value} MB
+• Memory Maximum: {selectedRow.Cells["Memory Maximum (MB)"].Value} MB
 • Dynamic Memory: {selectedRow.Cells["Dynamic Memory"]?.Value}
 
 Hardware Configuration:
-• Hard Drives: {selectedRow.Cells["Hard Drives"]?.Value}
-• Network Adapters: {selectedRow.Cells["Network Adapters"]?.Value}
-• DVD Drives: {selectedRow.Cells["DVD Drives"]?.Value}
+• Hard Drives: {selectedRow.Cells["Hard Drives"].Value}
+• Network Adapters: {selectedRow.Cells["Network Adapters"].Value}
+• DVD Drives: {selectedRow.Cells["DVD Drives"].Value}
 
 Advanced Properties:
-• Battery Passthrough: {selectedRow.Cells["Battery Passthrough"]?.Value}
-• Is Clustered: {selectedRow.Cells["Is Clustered"]?.Value}
-• Is Deleted: {selectedRow.Cells["Is Deleted"]?.Value}
-• Lock On Disconnect: {selectedRow.Cells["Lock On Disconnect"]?.Value}
-• Guest Controlled Cache: {selectedRow.Cells["Guest Controlled Cache"]?.Value}
+• Battery Passthrough: {selectedRow.Cells["Battery Passthrough"].Value}
+• Is Clustered: {selectedRow.Cells["Is Clustered"].Value}
+• Is Deleted: {selectedRow.Cells["Is Deleted"].Value}
+• Lock On Disconnect: {selectedRow.Cells["Lock On Disconnect"].Value}
+• Guest Controlled Cache: {selectedRow.Cells["Guest Controlled Cache"].Value}
 
 Advanced Memory Configuration:
-• Low MMIO Space: {selectedRow.Cells["Low MMIO Space"]?.Value}
-• High MMIO Space: {selectedRow.Cells["High MMIO Space"]?.Value}
-• High MMIO Base Address: {selectedRow.Cells["High MMIO Base Address"]?.Value}
+• Low MMIO Space: {selectedRow.Cells["Low MMIO Space"].Value}
+• High MMIO Space: {selectedRow.Cells["High MMIO Space"].Value}
+• High MMIO Base Address: {selectedRow.Cells["High MMIO Base Address"].Value}
 
 Hierarchy:
-• Parent Checkpoint: {selectedRow.Cells["Parent Checkpoint"]?.Value}
+• Parent Checkpoint: {selectedRow.Cells["Parent Checkpoint"].Value}
 
 Storage:
-• Path: {selectedRow.Cells["Path"]?.Value}
-• Host: {selectedRow.Cells["Host"]?.Value}
+• Path: {selectedRow.Cells["Path"].Value}
+• Host: {selectedRow.Cells["Host"].Value}
 
 Notes:
-{selectedRow.Cells["Notes"]?.Value}";
+{selectedRow.Cells["Notes"].Value}";
 
                 MessageBox.Show(details,
                     @"Checkpoint Details",
@@ -5856,7 +5854,6 @@ Notes:
                     return;
                 }
 
-
                 Message($"Updating datagridviewHealthOverview with host inventory data",
                     EventType.Information, 7112);
 
@@ -6051,17 +6048,17 @@ Notes:
 
                 // Set column widths
                 if (datagridviewHealthOverview.Columns.Contains("Category"))
-                    datagridviewHealthOverview.Columns["Category"].MinimumWidth = 150;
+                    datagridviewHealthOverview.Columns["Category"]?.MinimumWidth = 150;
                 if (datagridviewHealthOverview.Columns.Contains("Property"))
-                    datagridviewHealthOverview.Columns["Property"].MinimumWidth = 180;
+                    datagridviewHealthOverview.Columns["Property"]?.MinimumWidth = 180;
                 if (datagridviewHealthOverview.Columns.Contains("Value"))
-                    datagridviewHealthOverview.Columns["Value"].MinimumWidth = 200;
+                    datagridviewHealthOverview.Columns["Value"]?.MinimumWidth = 200;
                 if (datagridviewHealthOverview.Columns.Contains("Details"))
-                    datagridviewHealthOverview.Columns["Details"].MinimumWidth = 300;
+                    datagridviewHealthOverview.Columns["Details"]?.MinimumWidth = 300;
                 if (datagridviewHealthOverview.Columns.Contains("Status"))
-                    datagridviewHealthOverview.Columns["Status"].MinimumWidth = 80;
+                    datagridviewHealthOverview.Columns["Status"]?.MinimumWidth = 80;
                 if (datagridviewHealthOverview.Columns.Contains("Help"))
-                    datagridviewHealthOverview.Columns["Help"].MinimumWidth = 350;
+                    datagridviewHealthOverview.Columns["Help"]?.MinimumWidth = 350;
 
                 // Apply color coding based on Status column
                 ApplyHealthOverviewColorCoding();
@@ -6099,8 +6096,8 @@ Notes:
         {
             foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
             {
-                var status = row.Cells["Status"]?.Value?.ToString();
-                var category = row.Cells["Category"]?.Value?.ToString();
+                var status = row.Cells["Status"].Value?.ToString();
+                var category = row.Cells["Category"].Value?.ToString();
 
                 // Apply row background color based on category for grouping effect
                 if (category?.Contains("Host Information") == true)
@@ -6198,7 +6195,7 @@ Notes:
 
                 foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
                 {
-                    var status = row.Cells["Status"]?.Value?.ToString();
+                    var status = row.Cells["Status"].Value?.ToString();
                     switch (status)
                     {
                         case "Good": goodCount++; break;
@@ -6290,10 +6287,10 @@ Notes:
         {
             foreach (DataGridViewRow row in datagridviewHealthOverview.Rows)
             {
-                var property = row.Cells["Property"]?.Value?.ToString();
+                var property = row.Cells["Property"].Value?.ToString();
                 if (property == propertyName)
                 {
-                    return row.Cells["Value"]?.Value?.ToString() ?? "N/A";
+                    return row.Cells["Value"].Value?.ToString() ?? "N/A";
                 }
             }
             return "N/A";

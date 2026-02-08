@@ -3776,6 +3776,7 @@ Management:
             LoadClusterInformationView();
         }
 
+        /*
         /// <summary>
         /// Loads and displays virtual disk information in the hvDisks tab
         /// </summary>
@@ -3856,6 +3857,7 @@ Management:
                 Cursor = Cursors.Default;
             }
         }
+        */
 
         /// <summary>
         /// Updates the datagridviewvDiskOverView DataGridView with virtual disk details
@@ -4167,7 +4169,7 @@ Management:
                             Message("No virtual disks found",
                                 EventType.Warning, 5034);
 
-                            toolStripStatusLabelTextMainForm.Text = "No virtual disks found";
+                            toolStripStatusLabelTextMainForm.Text = @"No virtual disks found";
 
                             MessageBox.Show(@"No virtual disks found.",
                                 @"Information",

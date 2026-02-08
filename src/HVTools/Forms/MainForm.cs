@@ -5613,14 +5613,14 @@ Would you like to open the file location?",
                     row["Lock On Disconnect"] = checkpoint.Properties["LockOnDisconnect"]?.Value?.ToString() ?? "Off";
 
                     // Advanced Memory Mapped IO
-                    var lowMMIO = checkpoint.Properties["LowMemoryMappedIoSpace"]?.Value;
-                    row["Low MMIO Space"] = lowMMIO != null ? lowMMIO.ToString() : "0";
+                    var lowMmio = checkpoint.Properties["LowMemoryMappedIoSpace"]?.Value;
+                    row["Low MMIO Space"] = lowMmio != null ? lowMmio.ToString() : "0";
 
-                    var highMMIO = checkpoint.Properties["HighMemoryMappedIoSpace"]?.Value;
-                    row["High MMIO Space"] = highMMIO != null ? highMMIO.ToString() : "0";
+                    var highMmio = checkpoint.Properties["HighMemoryMappedIoSpace"]?.Value;
+                    row["High MMIO Space"] = highMmio != null ? highMmio.ToString() : "0";
 
-                    var highMMIOBase = checkpoint.Properties["HighMemoryMappedIoBaseAddress"]?.Value;
-                    row["High MMIO Base Address"] = highMMIOBase != null ? highMMIOBase.ToString() : "0";
+                    var highMmioBase = checkpoint.Properties["HighMemoryMappedIoBaseAddress"]?.Value;
+                    row["High MMIO Base Address"] = highMmioBase != null ? highMmioBase.ToString() : "0";
 
                     var guestCache = checkpoint.Properties["GuestControlledCacheTypes"]?.Value;
                     row["Guest Controlled Cache"] = (guestCache != null && (bool)guestCache) ? "Yes" : "No";

@@ -58,7 +58,7 @@
 # Introduction
 **HVTools** is a comprehensive inventory, documentation, and management tool for Microsoft Hyper-V environments - the equivalent of RVTools for VMware environments. 
 
-Just as RVTools helps VMware administrators document and inventory their vSphere infrastructure, HVTools provides detailed information about your Hyper-V hosts, virtual machines, clusters, and configurations, with powerful export capabilities for reporting and documentation purposes.
+Just as [RVTools](https://www.robware.net/rvtools/) helps VMware administrators document and inventory their vSphere, and Special thanks to Rob de Veij for creating RVTools, which has been an invaluable resource for VMware administrators for many years - HVTools aims to bring that same functionality to the Hyper-V community (and some more), providing a comprehensive view of your infrastructure in an easy-to-use interface to help administrators document and inventory their infrastructure, HVTools provides detailed information about your Hyper-V hosts, virtual machines, clusters, and configurations, with powerful export capabilities for reporting and documentation purposes.
 
 🌐 **Visit [hvtools.app](https://hvtools.app)** for more information, documentation, and downloads.
 
@@ -587,6 +587,8 @@ This project is licensed under the **MIT License** - see the LICENSE file for de
 
 See [LICENSE](LICENSE) for more information.
 
+Freeware - Free for personal and commercial use.
+
 ## 👨‍💻 Author
 
 Made with ❤️ **Michael Morten Sonne**
@@ -596,7 +598,6 @@ Made with ❤️ **Michael Morten Sonne**
 
 If **HVTools** helps you document and manage your Hyper-V environment, please consider giving it a star!
 
-
 # 🙏 Credits / Acknowledgments
 
 Special thanks to:
@@ -605,6 +606,7 @@ Special thanks to:
 - **Microsoft Hyper-V Team** for the robust management APIs
 - **Contributors** who help improve this project
 - **Early adopters** who provided valuable feedback
+- **Inspired by RVTools** (https://www.robware.net/rvtools/) by Rob de Veij
 
 ## ⭐ Star This Project
 
@@ -620,3 +622,7 @@ JetBrains specialises in intelligent, productivity-enabling tools to help you wr
 
 ## SAST Tools
 [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=github&utm_medium=organic&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
+
+---
+
+© 2026 Michael Morten Sonne | [hvtools.app](https://hvtools.app)

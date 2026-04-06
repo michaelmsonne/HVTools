@@ -255,5 +255,20 @@ namespace HVTools.Forms
                 MessageBox.Show(ex.Message, Globals.ToolName.FullName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void linkLabelDisclaimers_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                using (DisclaimersForm disclaimersForm = new DisclaimersForm())
+                {
+                    disclaimersForm.ShowDialog(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(@"Error opening disclaimers: " + ex.Message, Globals.ToolName.FullName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

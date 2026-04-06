@@ -5,7 +5,7 @@
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+            private System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -43,6 +43,7 @@
             labelSignedBuildState = new Label();
             linkLabelWebsite = new LinkLabel();
             labelInspiredBy = new Label();
+            linkLabelDisclaimers = new LinkLabel();
             tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxBuyMeACoffee).BeginInit();
@@ -231,6 +232,17 @@
             linkLabelWebsite.Text = "Website";
             linkLabelWebsite.LinkClicked += linkLabelWebsite_LinkClicked;
             // 
+            // linkLabelDisclaimers
+            // 
+            linkLabelDisclaimers.AutoSize = true;
+            linkLabelDisclaimers.Location = new Point(440, 322);
+            linkLabelDisclaimers.Name = "linkLabelDisclaimers";
+            linkLabelDisclaimers.Size = new Size(71, 15);
+            linkLabelDisclaimers.TabIndex = 8;
+            linkLabelDisclaimers.TabStop = true;
+            linkLabelDisclaimers.Text = "Disclaimers";
+            linkLabelDisclaimers.LinkClicked += linkLabelDisclaimers_LinkClicked;
+            // 
             // labelInspiredBy
             // 
             labelInspiredBy.AutoSize = true;
@@ -249,6 +261,7 @@
             BackColor = Color.White;
             ClientSize = new Size(619, 358);
             Controls.Add(labelInspiredBy);
+            Controls.Add(linkLabelDisclaimers);
             Controls.Add(linkLabelWebsite);
             Controls.Add(labelSignedBuildState);
             Controls.Add(linkLabelLinkedIn);
@@ -291,5 +304,6 @@
         private System.Windows.Forms.Label labelSignedBuildState;
         private LinkLabel linkLabelWebsite;
         private Label labelInspiredBy;
+        private LinkLabel linkLabelDisclaimers;
     }
 }

@@ -149,6 +149,7 @@
             toolStripStatusLabelMainForm = new ToolStripStatusLabel();
             toolStripStatusLabelTextMainForm = new ToolStripStatusLabel();
             toolstripstatuslabelMain_CreatedBy = new Label();
+            copySelectionToClipboardToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)datagridviewVMOverView).BeginInit();
             tabcontrolMainForm.SuspendLayout();
             tabpagehvOverview.SuspendLayout();
@@ -1022,11 +1023,11 @@
             checkBoxFilterResults.AutoSize = true;
             checkBoxFilterResults.Font = new Font("Segoe UI", 9F);
             checkBoxFilterResults.ForeColor = Color.FromArgb(64, 64, 64);
-            checkBoxFilterResults.Location = new Point(414, 8);
+            checkBoxFilterResults.Location = new Point(481, 8);
             checkBoxFilterResults.Name = "checkBoxFilterResults";
-            checkBoxFilterResults.Size = new Size(118, 19);
+            checkBoxFilterResults.Size = new Size(107, 19);
             checkBoxFilterResults.TabIndex = 6;
-            checkBoxFilterResults.Text = "Show only results";
+            checkBoxFilterResults.Text = "List only results";
             checkBoxFilterResults.UseVisualStyleBackColor = true;
             checkBoxFilterResults.CheckedChanged += CheckBoxFilterResults_CheckedChanged;
             // 
@@ -1289,6 +1290,7 @@
             // 
             // toolsToolStripMenuItem
             // 
+            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { copySelectionToClipboardToolStripMenuItem });
             toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             toolsToolStripMenuItem.Size = new Size(47, 20);
             toolsToolStripMenuItem.Text = "Tools";
@@ -1345,6 +1347,13 @@
             toolstripstatuslabelMain_CreatedBy.Size = new Size(190, 15);
             toolstripstatuslabelMain_CreatedBy.TabIndex = 4;
             toolstripstatuslabelMain_CreatedBy.Text = "Created by: Michael Morten Sonne";
+            // 
+            // copySelectionToClipboardToolStripMenuItem
+            // 
+            copySelectionToClipboardToolStripMenuItem.Name = "copySelectionToClipboardToolStripMenuItem";
+            copySelectionToClipboardToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.C;
+            copySelectionToClipboardToolStripMenuItem.Size = new Size(261, 22);
+            copySelectionToClipboardToolStripMenuItem.Text = "Copy selection to clipboard";
             // 
             // MainForm
             // 
@@ -1529,5 +1538,6 @@
         private TabPage tabPagehvMemory;
         private TabPage tabPagehvReplication;
         private TabPage tabPagehvDVD;
+        private ToolStripMenuItem copySelectionToClipboardToolStripMenuItem;
     }
 }

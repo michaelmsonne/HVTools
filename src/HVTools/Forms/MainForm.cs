@@ -869,10 +869,12 @@ namespace HVTools.Forms
                     }
                     else
                     {
-                        row["Uptime"] = "";
-                    }
+                            row["Uptime"] = "";
+                        }
 
-                    row["Heartbeat"] = vm.Properties["Heartbeat"]?.Value?.ToString() ?? "";
+                        // Format heartbeat status for user-friendly display
+                        var rawHeartbeat = vm.Properties["Heartbeat"]?.Value?.ToString();
+                        row["Heartbeat"] = FormatHeartbeat(rawHeartbeat);
 
                     row["Auto Start"] = vm.Properties["AutomaticStartAction"]?.Value?.ToString() ?? "";
                     row["Auto Stop"] = vm.Properties["AutomaticStopAction"]?.Value?.ToString() ?? "";
@@ -1338,6 +1340,32 @@ namespace HVTools.Forms
                 return $"{timeSpan.Minutes}m {timeSpan.Seconds}s";
         }
 
+        /// <summary>
+        /// Formats heartbeat status into user-friendly text
+        /// </summary>
+        private string FormatHeartbeat(string? heartbeat)
+        {
+            if (string.IsNullOrEmpty(heartbeat))
+                return "Unknown";
+
+            switch (heartbeat)
+            {
+                case "OkApplicationsHealthy":
+                    return "OK";
+                case "OkApplicationsUnknown":
+                    return "OK (No Application Data)";
+                case "NoContact":
+                    return "No Contact";
+                case "Error":
+                    return "Error";
+                case "Lost Communication":
+                case "LostCommunication":
+                    return "Lost Communication";
+                default:
+                    return heartbeat;
+            }
+        }
+
         private void ApplyColorCoding()
         {
             foreach (DataGridViewRow row in datagridviewVMOverView.Rows)
@@ -1367,21 +1395,26 @@ namespace HVTools.Forms
                     }
                 }
 
-                // Color code Heartbeat status
+                // Color code Heartbeat status (works with formatted heartbeat values)
                 if (row.Cells["Heartbeat"] != null && row.Cells["Heartbeat"].Value != null)
                 {
                     var heartbeat = row.Cells["Heartbeat"].Value.ToString();
-                    if (heartbeat.Contains("Ok"))
+                    // Check for OK status (including "OK" and "OK (No Application Data)")
+                    if (heartbeat?.StartsWith("OK", StringComparison.OrdinalIgnoreCase) == true)
                     {
                         row.Cells["Heartbeat"].Style.BackColor = Color.LightGreen;
+                        row.Cells["Heartbeat"].Style.ForeColor = Color.DarkGreen;
                     }
                     else if (heartbeat == "Unknown")
                     {
                         row.Cells["Heartbeat"].Style.BackColor = Color.LightYellow;
+                        row.Cells["Heartbeat"].Style.ForeColor = Color.DarkOrange;
                     }
                     else
                     {
+                        // Error, No Contact, Lost Communication
                         row.Cells["Heartbeat"].Style.BackColor = Color.LightCoral;
+                        row.Cells["Heartbeat"].Style.ForeColor = Color.DarkRed;
                     }
                 }
 
@@ -6678,7 +6711,7 @@ Unused Resources:
             }
             else
             {
-                labelSearchResults.Text = "No results";
+                labelSearchResults.Text = @"No results";
                 _currentSearchIndex = -1;
 
                 Message($"Search found no results for '{searchText}'",

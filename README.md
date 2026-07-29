@@ -58,7 +58,7 @@
 # Introduction
 **HVTools** is a comprehensive inventory, documentation, and management tool for Microsoft Hyper-V environments - the equivalent of RVTools for VMware environments. 
 
-Just as [RVTools](https://www.robware.net/rvtools/) helps VMware administrators document and inventory their vSphere, and Special thanks to Rob de Veij for creating RVTools, which has been an invaluable resource for VMware administrators for many years - HVTools aims to bring that same functionality to the Hyper-V community (and some more), providing a comprehensive view of your infrastructure in an easy-to-use interface to help administrators document and inventory their infrastructure, HVTools provides detailed information about your Hyper-V hosts, virtual machines, clusters, and configurations, with powerful export capabilities for reporting and documentation purposes.
+Just as [RVTools](https://www.dell.com/en-us/shop/vmware/sl/rvtools) helps VMware administrators document and inventory their vSphere, and Special thanks to Rob de Veij for creating RVTools, which has been an invaluable resource for VMware administrators for many years - HVTools aims to bring that same functionality to the Hyper-V community (and some more), providing a comprehensive view of your infrastructure in an easy-to-use interface to help administrators document and inventory their infrastructure, HVTools provides detailed information about your Hyper-V hosts, virtual machines, clusters, and configurations, with powerful export capabilities for reporting and documentation purposes.
 
 🌐 **Visit [hvtools.app](https://hvtools.app)** for more information, documentation, and downloads.
 
@@ -596,7 +596,7 @@ Made with ❤️ **Michael Morten Sonne**
 
 Special thanks to:
 - **PowerShell Community** for excellent Hyper-V cmdlets and documentation
-- **I spired by RVTools** (https://www.robware.net/rvtools/) by Rob de Veij for inspiration - the gold standard for VMware inventory tools
+- **I spired by RVTools** (https://www.dell.com/en-us/shop/vmware/sl/rvtools) by Rob de Veij for inspiration - the gold standard for VMware inventory tools
 - **Microsoft Hyper-V Team** for the robust management APIs
 - **Contributors** who help improve this project
 - **Early adopters** who provided valuable feedback

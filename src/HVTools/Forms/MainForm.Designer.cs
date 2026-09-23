@@ -125,8 +125,14 @@
             downloadLastestReleaseFromGitHubToolStripMenuItem = new ToolStripMenuItem();
             changelogToolStripMenuItem = new ToolStripMenuItem();
             exportDataToolStripMenuItem = new ToolStripMenuItem();
-            exportAllDataToolStripMenuItem = new ToolStripMenuItem();
-            exportCurrentTabToolStripMenuItem = new ToolStripMenuItem();
+            exportAllToExcelToolStripMenuItem = new ToolStripMenuItem();
+            exportAllToCsvToolStripMenuItem = new ToolStripMenuItem();
+            exportCurrentToExcelToolStripMenuItem = new ToolStripMenuItem();
+            exportCurrentToCsvToolStripMenuItem = new ToolStripMenuItem();
+            
+            
+
+            
             aboutToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             exitToolStripMenuItem = new ToolStripMenuItem();
@@ -958,6 +964,7 @@
             buttonExportHealthOverview.TabIndex = 8;
             buttonExportHealthOverview.Text = "&Export Health Overview";
             buttonExportHealthOverview.UseVisualStyleBackColor = true;
+            buttonExportHealthOverview.Click += buttonExportHealthOverview_Click;
             // 
             // buttonSummaryHealthOverviewView
             // 
@@ -1179,26 +1186,41 @@
             changelogToolStripMenuItem.Name = "changelogToolStripMenuItem";
             changelogToolStripMenuItem.Size = new Size(273, 22);
             changelogToolStripMenuItem.Text = "Changelog";
-            changelogToolStripMenuItem.Click += changelogToolStripMenuItem_Click;
-            // 
+            changelogToolStripMenuItem.Click += changelogToolStripMenuItem_Click;            // 
             // exportDataToolStripMenuItem
             // 
-            exportDataToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exportAllDataToolStripMenuItem, exportCurrentTabToolStripMenuItem });
+            exportDataToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exportAllToExcelToolStripMenuItem, exportAllToCsvToolStripMenuItem, exportCurrentToExcelToolStripMenuItem, exportCurrentToCsvToolStripMenuItem });
             exportDataToolStripMenuItem.Name = "exportDataToolStripMenuItem";
             exportDataToolStripMenuItem.Size = new Size(273, 22);
             exportDataToolStripMenuItem.Text = "Export data";
             // 
-            // exportAllDataToolStripMenuItem
+            // exportAllToExcelToolStripMenuItem
             // 
-            exportAllDataToolStripMenuItem.Name = "exportAllDataToolStripMenuItem";
-            exportAllDataToolStripMenuItem.Size = new Size(168, 22);
-            exportAllDataToolStripMenuItem.Text = "Export all data";
+            exportAllToExcelToolStripMenuItem.Name = "exportAllToExcelToolStripMenuItem";
+            exportAllToExcelToolStripMenuItem.Size = new Size(220, 22);
+            exportAllToExcelToolStripMenuItem.Text = "Export all to Excel";
+            exportAllToExcelToolStripMenuItem.Click += exportAllToExcelToolStripMenuItem_Click;
             // 
-            // exportCurrentTabToolStripMenuItem
+            // exportAllToCsvToolStripMenuItem
             // 
-            exportCurrentTabToolStripMenuItem.Name = "exportCurrentTabToolStripMenuItem";
-            exportCurrentTabToolStripMenuItem.Size = new Size(168, 22);
-            exportCurrentTabToolStripMenuItem.Text = "Export current tab";
+            exportAllToCsvToolStripMenuItem.Name = "exportAllToCsvToolStripMenuItem";
+            exportAllToCsvToolStripMenuItem.Size = new Size(220, 22);
+            exportAllToCsvToolStripMenuItem.Text = "Export all to CSV";
+            exportAllToCsvToolStripMenuItem.Click += exportAllToCsvToolStripMenuItem_Click;
+            // 
+            // exportCurrentToExcelToolStripMenuItem
+            // 
+            exportCurrentToExcelToolStripMenuItem.Name = "exportCurrentToExcelToolStripMenuItem";
+            exportCurrentToExcelToolStripMenuItem.Size = new Size(220, 22);
+            exportCurrentToExcelToolStripMenuItem.Text = "Export current tab to Excel";
+            exportCurrentToExcelToolStripMenuItem.Click += exportCurrentToExcelToolStripMenuItem_Click;
+            // 
+            // exportCurrentToCsvToolStripMenuItem
+            // 
+            exportCurrentToCsvToolStripMenuItem.Name = "exportCurrentToCsvToolStripMenuItem";
+            exportCurrentToCsvToolStripMenuItem.Size = new Size(220, 22);
+            exportCurrentToCsvToolStripMenuItem.Text = "Export current tab to CSV";
+            exportCurrentToCsvToolStripMenuItem.Click += exportCurrentToCsvToolStripMenuItem_Click;
             // 
             // aboutToolStripMenuItem
             // 
@@ -1467,6 +1489,10 @@
         private ToolStripMenuItem downloadLastestReleaseFromGitHubToolStripMenuItem;
         private ToolStripMenuItem changelogToolStripMenuItem;
         private ToolStripMenuItem exportDataToolStripMenuItem;
+        private ToolStripMenuItem exportAllToExcelToolStripMenuItem;
+        private ToolStripMenuItem exportAllToCsvToolStripMenuItem;
+        private ToolStripMenuItem exportCurrentToExcelToolStripMenuItem;
+        private ToolStripMenuItem exportCurrentToCsvToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
         private TabPage tabpageManageNetwork;
@@ -1542,8 +1568,6 @@
         private Label labelClusterNodeSelector;
         private Button buttonSummaryvHostsView;
         private ToolStripSeparator toolStripSeparator2;
-        private ToolStripMenuItem exportAllDataToolStripMenuItem;
-        private ToolStripMenuItem exportCurrentTabToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem viewToolStripMenuItem;
         private ToolStripMenuItem refreshDataToolStripMenuItem;

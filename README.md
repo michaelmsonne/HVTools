@@ -1,4 +1,17 @@
-# HVTools
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:5B86E5,100:36D1DC&height=180&section=header&text=HVTools&fontSize=52&fontColor=ffffff&animation=fadeIn" alt="HVTools banner" />
+</p>
+
+<p align="center">
+  🚀 Want to help improve this project?<br/>
+  Please fork the repository and open a pull request with your changes to here!
+  <br/><br/>
+  I’ll review contributions and merge quality improvements so we can build a great tool together.
+  <br/><br/>
+  Thank you for your support! 🙌
+  <br/><br/>
+</p>
+
 
 <p align="center">
   <a href="https://github.com/michaelmsonne/HVTools/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/HVTools?include_prereleases&logo=github"></a>

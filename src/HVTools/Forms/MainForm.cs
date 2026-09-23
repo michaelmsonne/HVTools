@@ -88,7 +88,7 @@ namespace HVTools.Forms
             Label labelNotImplemented = new Label
             {
                 Name = "labelNotImplemented",
-                Text = "Not implemented yet",
+                Text = @"Not implemented yet",
                 AutoSize = false,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,

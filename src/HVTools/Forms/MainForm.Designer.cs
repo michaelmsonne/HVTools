@@ -129,10 +129,6 @@
             exportAllToCsvToolStripMenuItem = new ToolStripMenuItem();
             exportCurrentToExcelToolStripMenuItem = new ToolStripMenuItem();
             exportCurrentToCsvToolStripMenuItem = new ToolStripMenuItem();
-            
-            
-
-            
             aboutToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             exitToolStripMenuItem = new ToolStripMenuItem();
@@ -150,17 +146,17 @@
             every10MinutesToolStripMenuItem = new ToolStripMenuItem();
             toolsToolStripMenuItem = new ToolStripMenuItem();
             copySelectionToClipboardToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator5 = new ToolStripSeparator();
+            findInCurrentViewToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
+            testConnectionToolStripMenuItem = new ToolStripMenuItem();
+            testClusterConnectionToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             pictureboxSupportMe = new PictureBox();
             statusStripMainForm = new StatusStrip();
             toolStripStatusLabelMainForm = new ToolStripStatusLabel();
             toolStripStatusLabelTextMainForm = new ToolStripStatusLabel();
             toolstripstatuslabelMain_CreatedBy = new Label();
-            toolStripSeparator5 = new ToolStripSeparator();
-            findInCurrentViewToolStripMenuItem = new ToolStripMenuItem();
-            toolStripSeparator6 = new ToolStripSeparator();
-            testConnectionToolStripMenuItem = new ToolStripMenuItem();
-            testClusterConnectionToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)datagridviewVMOverView).BeginInit();
             tabcontrolMainForm.SuspendLayout();
             tabpagehvOverview.SuspendLayout();
@@ -246,11 +242,11 @@
             // buttonExportVMvmOverviewView
             // 
             buttonExportVMvmOverviewView.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonExportVMvmOverviewView.Location = new Point(1329, 6);
+            buttonExportVMvmOverviewView.Location = new Point(1227, 6);
             buttonExportVMvmOverviewView.Name = "buttonExportVMvmOverviewView";
-            buttonExportVMvmOverviewView.Size = new Size(81, 23);
+            buttonExportVMvmOverviewView.Size = new Size(183, 23);
             buttonExportVMvmOverviewView.TabIndex = 4;
-            buttonExportVMvmOverviewView.Text = "Export VM´s";
+            buttonExportVMvmOverviewView.Text = "Export VM´s in special format";
             buttonExportVMvmOverviewView.UseVisualStyleBackColor = true;
             buttonExportVMvmOverviewView.Click += buttonExportVMvmOverviewView_Click;
             // 
@@ -1186,7 +1182,8 @@
             changelogToolStripMenuItem.Name = "changelogToolStripMenuItem";
             changelogToolStripMenuItem.Size = new Size(273, 22);
             changelogToolStripMenuItem.Text = "Changelog";
-            changelogToolStripMenuItem.Click += changelogToolStripMenuItem_Click;            // 
+            changelogToolStripMenuItem.Click += changelogToolStripMenuItem_Click;
+            // 
             // exportDataToolStripMenuItem
             // 
             exportDataToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exportAllToExcelToolStripMenuItem, exportAllToCsvToolStripMenuItem, exportCurrentToExcelToolStripMenuItem, exportCurrentToCsvToolStripMenuItem });
@@ -1197,28 +1194,28 @@
             // exportAllToExcelToolStripMenuItem
             // 
             exportAllToExcelToolStripMenuItem.Name = "exportAllToExcelToolStripMenuItem";
-            exportAllToExcelToolStripMenuItem.Size = new Size(220, 22);
+            exportAllToExcelToolStripMenuItem.Size = new Size(211, 22);
             exportAllToExcelToolStripMenuItem.Text = "Export all to Excel";
             exportAllToExcelToolStripMenuItem.Click += exportAllToExcelToolStripMenuItem_Click;
             // 
             // exportAllToCsvToolStripMenuItem
             // 
             exportAllToCsvToolStripMenuItem.Name = "exportAllToCsvToolStripMenuItem";
-            exportAllToCsvToolStripMenuItem.Size = new Size(220, 22);
+            exportAllToCsvToolStripMenuItem.Size = new Size(211, 22);
             exportAllToCsvToolStripMenuItem.Text = "Export all to CSV";
             exportAllToCsvToolStripMenuItem.Click += exportAllToCsvToolStripMenuItem_Click;
             // 
             // exportCurrentToExcelToolStripMenuItem
             // 
             exportCurrentToExcelToolStripMenuItem.Name = "exportCurrentToExcelToolStripMenuItem";
-            exportCurrentToExcelToolStripMenuItem.Size = new Size(220, 22);
+            exportCurrentToExcelToolStripMenuItem.Size = new Size(211, 22);
             exportCurrentToExcelToolStripMenuItem.Text = "Export current tab to Excel";
             exportCurrentToExcelToolStripMenuItem.Click += exportCurrentToExcelToolStripMenuItem_Click;
             // 
             // exportCurrentToCsvToolStripMenuItem
             // 
             exportCurrentToCsvToolStripMenuItem.Name = "exportCurrentToCsvToolStripMenuItem";
-            exportCurrentToCsvToolStripMenuItem.Size = new Size(220, 22);
+            exportCurrentToCsvToolStripMenuItem.Size = new Size(211, 22);
             exportCurrentToCsvToolStripMenuItem.Text = "Export current tab to CSV";
             exportCurrentToCsvToolStripMenuItem.Click += exportCurrentToCsvToolStripMenuItem_Click;
             // 
@@ -1294,25 +1291,25 @@
             // disabledMinuteToolStripMenuItem
             // 
             disabledMinuteToolStripMenuItem.Name = "disabledMinuteToolStripMenuItem";
-            disabledMinuteToolStripMenuItem.Size = new Size(180, 22);
+            disabledMinuteToolStripMenuItem.Size = new Size(163, 22);
             disabledMinuteToolStripMenuItem.Text = "Disabled";
             // 
             // every1MinuteToolStripMenuItem
             // 
             every1MinuteToolStripMenuItem.Name = "every1MinuteToolStripMenuItem";
-            every1MinuteToolStripMenuItem.Size = new Size(180, 22);
+            every1MinuteToolStripMenuItem.Size = new Size(163, 22);
             every1MinuteToolStripMenuItem.Text = "Every 1 minute";
             // 
             // every5MinutesToolStripMenuItem
             // 
             every5MinutesToolStripMenuItem.Name = "every5MinutesToolStripMenuItem";
-            every5MinutesToolStripMenuItem.Size = new Size(180, 22);
+            every5MinutesToolStripMenuItem.Size = new Size(163, 22);
             every5MinutesToolStripMenuItem.Text = "Every 5 minutes";
             // 
             // every10MinutesToolStripMenuItem
             // 
             every10MinutesToolStripMenuItem.Name = "every10MinutesToolStripMenuItem";
-            every10MinutesToolStripMenuItem.Size = new Size(180, 22);
+            every10MinutesToolStripMenuItem.Size = new Size(163, 22);
             every10MinutesToolStripMenuItem.Text = "Every 10 minutes";
             // 
             // toolsToolStripMenuItem
@@ -1328,6 +1325,34 @@
             copySelectionToClipboardToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.C;
             copySelectionToClipboardToolStripMenuItem.Size = new Size(261, 22);
             copySelectionToClipboardToolStripMenuItem.Text = "Copy selection to clipboard";
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(258, 6);
+            // 
+            // findInCurrentViewToolStripMenuItem
+            // 
+            findInCurrentViewToolStripMenuItem.Name = "findInCurrentViewToolStripMenuItem";
+            findInCurrentViewToolStripMenuItem.Size = new Size(261, 22);
+            findInCurrentViewToolStripMenuItem.Text = "Find in current view";
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(258, 6);
+            // 
+            // testConnectionToolStripMenuItem
+            // 
+            testConnectionToolStripMenuItem.Name = "testConnectionToolStripMenuItem";
+            testConnectionToolStripMenuItem.Size = new Size(261, 22);
+            testConnectionToolStripMenuItem.Text = "Test connection";
+            // 
+            // testClusterConnectionToolStripMenuItem
+            // 
+            testClusterConnectionToolStripMenuItem.Name = "testClusterConnectionToolStripMenuItem";
+            testClusterConnectionToolStripMenuItem.Size = new Size(261, 22);
+            testClusterConnectionToolStripMenuItem.Text = "Test Cluster connection";
             // 
             // helpToolStripMenuItem
             // 
@@ -1381,34 +1406,6 @@
             toolstripstatuslabelMain_CreatedBy.Size = new Size(190, 15);
             toolstripstatuslabelMain_CreatedBy.TabIndex = 4;
             toolstripstatuslabelMain_CreatedBy.Text = "Created by: Michael Morten Sonne";
-            // 
-            // toolStripSeparator5
-            // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(258, 6);
-            // 
-            // findInCurrentViewToolStripMenuItem
-            // 
-            findInCurrentViewToolStripMenuItem.Name = "findInCurrentViewToolStripMenuItem";
-            findInCurrentViewToolStripMenuItem.Size = new Size(261, 22);
-            findInCurrentViewToolStripMenuItem.Text = "Find in current view";
-            // 
-            // toolStripSeparator6
-            // 
-            toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new Size(258, 6);
-            // 
-            // testConnectionToolStripMenuItem
-            // 
-            testConnectionToolStripMenuItem.Name = "testConnectionToolStripMenuItem";
-            testConnectionToolStripMenuItem.Size = new Size(261, 22);
-            testConnectionToolStripMenuItem.Text = "Test connection";
-            // 
-            // testClusterConnectionToolStripMenuItem
-            // 
-            testClusterConnectionToolStripMenuItem.Name = "testClusterConnectionToolStripMenuItem";
-            testClusterConnectionToolStripMenuItem.Size = new Size(261, 22);
-            testClusterConnectionToolStripMenuItem.Text = "Test Cluster connection";
             // 
             // MainForm
             // 

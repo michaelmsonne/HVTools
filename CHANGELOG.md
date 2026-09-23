@@ -1,9 +1,10 @@
-## [1.0.0.0] - XX-XX-XXXX
-Added:
-  -  ..
+## [Unreleased]
 
-Updates:
-  - ..
+### Added
+- Excel/CSV export workflows across tabs.
+
+### Updated
+- 
 
 ## [1.0.0.0 alpha 1] - 11-03-2026
-First public release
+First public release.

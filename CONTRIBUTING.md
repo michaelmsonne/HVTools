@@ -60,6 +60,8 @@ Use our [Feature Request Template](.github/ISSUE_TEMPLATE/02_FEATURE_REQUEST.md)
 
 We welcome code contributions! Here's how you can help:
 
+HVTools is MIT licensed, but please keep improvements in this repository so the community can continue building the most complete version together.
+
 #### Good First Issues
 
 Look for issues labeled `good first issue` - these are perfect for newcomers to the project.

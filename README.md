@@ -6,12 +6,13 @@
   🚀 Want to help improve this project?<br/>
   Please fork the repository and open a pull request with your changes to here!
   <br/><br/>
+  HVTools is MIT licensed, but please keep improvements in this repository so the community can continue building the most complete version together.
+  <br/><br/>
   I’ll review contributions and merge quality improvements so we can build a great tool together.
   <br/><br/>
   Thank you for your support! 🙌
   <br/><br/>
 </p>
-
 
 <p align="center">
   <a href="https://github.com/michaelmsonne/HVTools/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/HVTools?include_prereleases&logo=github"></a>
@@ -614,6 +615,8 @@ Outline the file contents of the repository. It helps users navigate the codebas
 # Contributing
 
 If you want to contribute to this project, please open an issue or submit a pull request. I welcome contributions :)
+
+HVTools is MIT licensed, but please keep improvements in this repository so the community can continue building the most complete version together.
 
 See [CONTRIBUTING](CONTRIBUTING) for more information.
 
